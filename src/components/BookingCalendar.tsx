@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Clock, Calendar as CalendarIcon, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { createBooking, getTutorBookingsForDate } from "@/lib/api";
 
@@ -31,6 +33,10 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
     const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
     const [isBooking, setIsBooking] = useState(false);
     const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+    const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+    const [cardNumber, setCardNumber] = useState("");
+    const [expiry, setExpiry] = useState("");
+    const [cvc, setCvc] = useState("");
 
     // Fetch booked slots when date changes
     useEffect(() => {
@@ -68,17 +74,30 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
             return;
         }
 
+        if (hourlyRate > 0) {
+            setIsPaymentOpen(true);
+        } else {
+            // Free trial, skip payment
+            processBooking();
+        }
+    };
+
+    const processBooking = async () => {
         setIsBooking(true);
 
         const { data, error } = await createBooking({
             tutor_id: tutorId,
-            student_id: user.id,
-            booking_date: format(date, "yyyy-MM-dd"),
-            time_slot: selectedSlot,
+            student_id: user.id as string,
+            booking_date: format(date as Date, "yyyy-MM-dd"),
+            time_slot: selectedSlot as string,
             hourly_rate: hourlyRate,
         });
 
         setIsBooking(false);
+        setIsPaymentOpen(false);
+        setCardNumber("");
+        setExpiry("");
+        setCvc("");
 
         if (error) {
             toast.error("Failed to book lesson", {
@@ -88,12 +107,29 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
         }
 
         toast.success("Booking confirmed!", {
-            description: `Your session is scheduled for ${format(date, "MMMM do")} at ${selectedSlot}.`,
+            description: `Your session is scheduled for ${format(date as Date, "MMMM do")} at ${selectedSlot}.`,
         });
 
         // Add the newly booked slot to the list
-        setBookedSlots((prev) => [...prev, selectedSlot]);
+        setBookedSlots((prev) => [...prev, selectedSlot as string]);
         setSelectedSlot(null);
+    };
+
+    const handlePaymentSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Mock validation
+        if (cardNumber.length < 16 || expiry.length < 5 || cvc.length < 3) {
+            toast.error("Invalid payment details", {
+                description: "Please enter valid card information.",
+            });
+            return;
+        }
+        
+        toast.success("Payment successful", {
+            description: "Your mock payment has been processed.",
+        });
+        
+        processBooking();
     };
 
     return (
@@ -153,7 +189,6 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
                     </div>
                 </div>
 
-                {/* Booking Summary & Action */}
                 {selectedSlot && date && (
                     <div className="rounded-lg border bg-accent/20 p-4 space-y-4 animate-in fade-in slide-in-from-bottom-4">
                         <div className="flex items-start gap-3">
@@ -176,7 +211,7 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
                             onClick={handleBook}
                             disabled={isBooking}
                         >
-                            {isBooking ? "Confirming..." : "Confirm Booking"}
+                            {hourlyRate > 0 ? "Proceed to Payment" : "Confirm Booking"}
                         </Button>
                         <p className="text-xs text-center text-muted-foreground">
                             Free cancellation up to 24 hours before the lesson.
@@ -184,6 +219,79 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
                     </div>
                 )}
             </div>
+
+            {/* Mock Payment Dialog */}
+            <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Secure Checkout</DialogTitle>
+                        <DialogDescription>
+                            Complete your payment to confirm your booking. This is a mock payment form.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handlePaymentSubmit}>
+                        <div className="grid gap-4 py-4">
+                            <div className="space-y-2">
+                                <label htmlFor="amount" className="text-sm font-medium leading-none">
+                                    Total Amount
+                                </label>
+                                <div className="text-2xl font-bold">${hourlyRate.toFixed(2)}</div>
+                            </div>
+                            <div className="space-y-2">
+                                <label htmlFor="cardNumber" className="text-sm font-medium leading-none">
+                                    Card Number
+                                </label>
+                                <Input
+                                    id="cardNumber"
+                                    placeholder="0000 0000 0000 0000"
+                                    value={cardNumber}
+                                    onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, '').slice(0, 16))}
+                                    required
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label htmlFor="expiry" className="text-sm font-medium leading-none">
+                                        Expiry Date
+                                    </label>
+                                    <Input
+                                        id="expiry"
+                                        placeholder="MM/YY"
+                                        value={expiry}
+                                        onChange={(e) => {
+                                            let val = e.target.value.replace(/\D/g, '');
+                                            if (val.length >= 2) val = val.slice(0, 2) + '/' + val.slice(2, 4);
+                                            setExpiry(val.slice(0, 5));
+                                        }}
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label htmlFor="cvc" className="text-sm font-medium leading-none">
+                                        CVC
+                                    </label>
+                                    <Input
+                                        id="cvc"
+                                        placeholder="123"
+                                        type="password"
+                                        value={cvc}
+                                        onChange={(e) => setCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setIsPaymentOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button type="submit" disabled={isBooking}>
+                                {isBooking ? "Processing..." : `Pay $${hourlyRate.toFixed(2)}`}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
