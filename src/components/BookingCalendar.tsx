@@ -168,15 +168,21 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
                                 return (
                                     <Button
                                         key={time}
-                                        variant={selectedSlot === time ? "default" : "outline"}
-                                        className={`justify-start h-auto py-3 px-4 ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                                        variant={selectedSlot === time ? "default" : disabled ? "secondary" : "outline"}
+                                        className={`justify-start h-auto py-3 px-4 transition-all ${
+                                            disabled
+                                                ? "opacity-70 cursor-not-allowed bg-muted text-muted-foreground border-dashed"
+                                                : "hover:border-primary hover:bg-primary/5"
+                                        }`}
                                         disabled={disabled}
                                         onClick={() => !disabled && setSelectedSlot(time)}
                                     >
-                                        <Clock className="mr-2 h-4 w-4" />
-                                        {time}
+                                        <Clock className={`mr-2 h-4 w-4 ${disabled ? "opacity-50" : ""}`} />
+                                        <span className={disabled ? "line-through opacity-70" : ""}>{time}</span>
                                         {disabled && (
-                                            <span className="ml-auto text-xs text-muted-foreground">Booked</span>
+                                            <Badge variant="outline" className="ml-auto text-[10px] uppercase bg-background text-red-500 border-red-200">
+                                                Booked
+                                            </Badge>
                                         )}
                                     </Button>
                                 );
