@@ -13,6 +13,8 @@ import Reviews from "@/components/Reviews";
 import BookingCalendar from "@/components/BookingCalendar";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import TutorMap from "@/components/TutorMap";
+import { useUserLocation } from "@/hooks/useUserLocation";
 
 interface EnhancedTutor extends Tutor {
   education?: string;
@@ -47,6 +49,7 @@ const TutorProfile = () => {
   const [isNew, setIsNew] = useState(false);
   const [isFav, setIsFav] = useState(false);
   const [isFavLoading, setIsFavLoading] = useState(false);
+  const { userLocation } = useUserLocation();
 
   useEffect(() => {
     if (user && id) {
@@ -429,6 +432,24 @@ const TutorProfile = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Map Section */}
+              {tutor.latitude && tutor.longitude && (
+                <div className="mt-6">
+                  <h3 className="mb-3 text-sm font-semibold text-foreground flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    Tutor Location
+                  </h3>
+                  <TutorMap
+                    tutorName={tutor.name}
+                    tutorLocation={tutor.location}
+                    latitude={tutor.latitude}
+                    longitude={tutor.longitude}
+                    userLatitude={userLocation?.latitude}
+                    userLongitude={userLocation?.longitude}
+                  />
+                </div>
+              )}
             </motion.div>
           </div>
         </div>

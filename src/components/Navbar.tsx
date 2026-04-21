@@ -42,6 +42,13 @@ const Navbar = () => {
       >
         Find Tutors
       </Link>
+      <Link
+        to="/map"
+        onClick={onClick}
+        className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-1"
+      >
+        Map View
+      </Link>
       {!user && (
         <Link
           to="/signup"
