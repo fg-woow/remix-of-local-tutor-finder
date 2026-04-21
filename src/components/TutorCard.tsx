@@ -91,6 +91,11 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
                 <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
                   <MapPin className="h-3.5 w-3.5" />
                   <span>{tutor.location}</span>
+                  {tutor.distance !== undefined && (
+                    <span className="ml-1 text-xs text-primary font-medium">
+                      • {tutor.distance < 1 ? "< 1 km" : tutor.distance < 10 ? `${tutor.distance.toFixed(1)} km` : `${Math.round(tutor.distance)} km`}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-1 rounded-full bg-accent px-2.5 py-1">

@@ -28,6 +28,8 @@ import { Label } from "@/components/ui/label";
 import { mockTutors, subjects, studentLevels, priceRanges, availabilityOptions } from "@/data/tutors";
 import { getTutorProfiles } from "@/lib/api";
 import type { Profile } from "@/lib/api";
+import { useUserLocation } from "@/hooks/useUserLocation";
+import { calculateDistanceKm, CITY_COORDINATES } from "@/lib/geolocation";
 
 type SortOption = "rating" | "price-low" | "price-high" | "newest" | "location" | "most-reviewed";
 
@@ -43,6 +45,7 @@ const Tutors = () => {
   const [dbTutors, setDbTutors] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFiltering, setIsFiltering] = useState(false);
+  const { userLocation } = useUserLocation();
 
   useEffect(() => {
     const fetchTutors = async () => {
@@ -64,33 +67,63 @@ const Tutors = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Combine mock tutors with database tutors
+  // Combine DB tutors with mock tutors (DB takes priority, deduplicate by user_id)
   const allTutors = useMemo(() => {
-    const dbTutorCards = dbTutors.map((t) => ({
-      id: t.user_id,
-      name: t.full_name,
-      avatar: t.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.full_name)}&background=0d9488&color=fff`,
-      subjects: t.subjects || [],
-      location: t.location || "Location not set",
-      bio: t.bio || "No bio yet",
-      rating: 5.0,
-      reviewCount: 0,
-      hourlyRate: t.hourly_rate || 0,
-      availability: t.availability || [],
-      experience: t.experience || "New tutor",
-      createdAt: t.created_at,
-      studentLevel: t.teaching_levels || ([] as string[]),
-      offersTrial: t.offers_trial || false,
-    }));
+    const dbIds = new Set(dbTutors.map((t) => t.user_id));
 
-    const mockWithDates = mockTutors.map((t) => ({
-      ...t,
-      createdAt: t.createdAt || undefined,
-      studentLevel: t.studentLevel || ["High School", "University"] as string[],
-    }));
+    const dbTutorCards = dbTutors.map((t) => {
+      let distance: number | undefined;
+      if (userLocation) {
+        const tutorCoords = t.latitude && t.longitude
+          ? { latitude: t.latitude, longitude: t.longitude }
+          : CITY_COORDINATES[t.location || ""];
+        if (tutorCoords) {
+          distance = calculateDistanceKm(userLocation, tutorCoords);
+        }
+      }
+
+      return {
+        id: t.user_id,
+        name: t.full_name,
+        avatar: t.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.full_name)}&background=0d9488&color=fff`,
+        subjects: t.subjects || [],
+        location: t.location || "Location not set",
+        bio: t.bio || "No bio yet",
+        rating: 5.0,
+        reviewCount: 0,
+        hourlyRate: t.hourly_rate || 0,
+        availability: t.availability || [],
+        experience: t.experience || "New tutor",
+        createdAt: t.created_at,
+        studentLevel: t.teaching_levels || ([] as string[]),
+        offersTrial: t.offers_trial || false,
+        latitude: t.latitude ?? undefined,
+        longitude: t.longitude ?? undefined,
+        distance,
+      };
+    });
+
+    // Only include mock tutors whose IDs are NOT already in the DB
+    const mockWithDates = mockTutors
+      .filter((t) => !dbIds.has(t.id))
+      .map((t) => {
+        let distance: number | undefined;
+        if (userLocation) {
+          const tutorCoords = CITY_COORDINATES[t.location];
+          if (tutorCoords) {
+            distance = calculateDistanceKm(userLocation, tutorCoords);
+          }
+        }
+        return {
+          ...t,
+          createdAt: t.createdAt || undefined,
+          studentLevel: t.studentLevel || ["High School", "University"] as string[],
+          distance,
+        };
+      });
 
     return [...dbTutorCards, ...mockWithDates];
-  }, [dbTutors]);
+  }, [dbTutors, userLocation]);
 
   const filteredAndSortedTutors = useMemo(() => {
     let result = allTutors.filter((tutor) => {
@@ -153,7 +186,12 @@ const Tutors = () => {
         result.sort((a, b) => b.reviewCount - a.reviewCount);
         break;
       case "location":
-        result.sort((a, b) => a.location.localeCompare(b.location));
+        result.sort((a, b) => {
+          const distA = a.distance ?? Infinity;
+          const distB = b.distance ?? Infinity;
+          if (distA !== distB) return distA - distB;
+          return a.location.localeCompare(b.location);
+        });
         break;
     }
 
@@ -473,7 +511,7 @@ const Tutors = () => {
                     <SelectItem value="location">
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4" />
-                        Location (A-Z)
+                        Nearest First
                       </div>
                     </SelectItem>
                   </SelectContent>

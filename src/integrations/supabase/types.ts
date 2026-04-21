@@ -71,6 +71,9 @@ export type Database = {
           teaching_levels: string[] | null
           updated_at: string
           user_id: string
+          latitude: number | null
+          longitude: number | null
+          offers_trial: boolean | null
         }
         Insert: {
           availability?: string[] | null
@@ -92,6 +95,9 @@ export type Database = {
           teaching_levels?: string[] | null
           updated_at?: string
           user_id: string
+          latitude?: number | null
+          longitude?: number | null
+          offers_trial?: boolean | null
         }
         Update: {
           availability?: string[] | null
@@ -113,6 +119,9 @@ export type Database = {
           teaching_levels?: string[] | null
           updated_at?: string
           user_id?: string
+          latitude?: number | null
+          longitude?: number | null
+          offers_trial?: boolean | null
         }
         Relationships: []
       }

@@ -22,6 +22,9 @@ export interface Tutor {
   studentLevel?: string[];
   reviews?: Review[];
   offersTrial?: boolean;
+  latitude?: number;
+  longitude?: number;
+  distance?: number; // distance in km from user
 }
 
 export const studentLevels = [
