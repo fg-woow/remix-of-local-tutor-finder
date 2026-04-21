@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import TutorMap from "@/components/TutorMap";
 import { useUserLocation } from "@/hooks/useUserLocation";
+import { calculateDistanceKm } from "@/lib/geolocation";
 
 interface EnhancedTutor extends Tutor {
   education?: string;
@@ -436,10 +437,20 @@ const TutorProfile = () => {
               {/* Map Section */}
               {tutor.latitude && tutor.longitude && (
                 <div className="mt-6">
-                  <h3 className="mb-3 text-sm font-semibold text-foreground flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-primary" />
-                    Tutor Location
-                  </h3>
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      Tutor Location
+                    </h3>
+                    {userLocation && (
+                      <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
+                        {(() => {
+                          const dist = calculateDistanceKm(userLocation, { latitude: tutor.latitude!, longitude: tutor.longitude! });
+                          return dist < 1 ? "< 1 km away" : `${Math.round(dist * 10) / 10} km away`;
+                        })()}
+                      </span>
+                    )}
+                  </div>
                   <TutorMap
                     tutorName={tutor.name}
                     tutorLocation={tutor.location}
