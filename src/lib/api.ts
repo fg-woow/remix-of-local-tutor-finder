@@ -55,19 +55,25 @@ export async function updateProfile(userId: string, updates: ProfileUpdate) {
   return { data, error };
 }
 
-/** Fetch all tutor profiles (profiles that have subjects set) */
+/** Fetch all tutor profiles */
 export async function getTutorProfiles() {
+  // First get all user IDs that are tutors
+  const { data: roleData, error: roleError } = await supabase
+    .from("user_roles")
+    .select("user_id")
+    .eq("role", "tutor");
+    
+  if (roleError || !roleData) return { data: [], error: roleError };
+  
+  const tutorIds = roleData.map(r => r.user_id);
+  
+  // Then fetch their profiles
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
-    .not("subjects", "eq", "{}");
+    .in("user_id", tutorIds);
 
-  // Filter to only those with actual subjects
-  const tutors = data?.filter(
-    (p) => p.subjects && p.subjects.length > 0
-  ) || [];
-
-  return { data: tutors, error };
+  return { data: data || [], error };
 }
 
 /** Fetch a tutor profile by user_id (public view) */
