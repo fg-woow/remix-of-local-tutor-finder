@@ -73,8 +73,9 @@ export default function SessionHistory() {
         isPastSession = new Date(b.booking_date) < new Date();
       }
 
-      // Auto-update status to completed if it's past and was scheduled
-      const status = isPastSession && b.status === "scheduled" ? "completed" : b.status;
+      // Auto-update status to completed if it's past and was active
+      const activeStatuses = ["scheduled", "pending", "confirmed"];
+      const status = isPastSession && activeStatuses.includes(b.status) ? "completed" : b.status;
 
       return {
         ...b,
@@ -168,7 +169,7 @@ export default function SessionHistory() {
 
                   <div className="flex flex-col sm:items-end gap-2 w-full sm:w-auto">
                     <div className="flex gap-2">
-                      {booking.displayStatus === "scheduled" && !booking.isPast && (
+                      {booking.displayStatus !== "cancelled" && booking.displayStatus !== "completed" && !booking.isPast && (
                         <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                           Upcoming
                         </Badge>
@@ -188,7 +189,7 @@ export default function SessionHistory() {
                       </Badge>
                     </div>
 
-                    {booking.displayStatus === "scheduled" && !booking.isPast && (
+                    {booking.displayStatus !== "cancelled" && booking.displayStatus !== "completed" && !booking.isPast && (
                       <Button 
                         variant="outline" 
                         size="sm" 
