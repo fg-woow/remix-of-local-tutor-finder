@@ -15,7 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import TutorMap from "@/components/TutorMap";
 import { useUserLocation } from "@/hooks/useUserLocation";
-import { calculateDistanceKm, CITY_COORDINATES } from "@/lib/geolocation";
+import { calculateDistanceKm, getFallbackCoordinates } from "@/lib/geolocation";
 
 interface EnhancedTutor extends Tutor {
   education?: string;
@@ -70,7 +70,7 @@ const TutorProfile = () => {
         let lat = data.latitude;
         let lng = data.longitude;
         if (!lat || !lng) {
-          const fallback = CITY_COORDINATES[data.location || ""] || { latitude: 41.0082, longitude: 28.9784 };
+          const fallback = getFallbackCoordinates(data.location || "");
           lat = fallback.latitude;
           lng = fallback.longitude;
         }

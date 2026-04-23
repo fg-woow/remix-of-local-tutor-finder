@@ -13,7 +13,7 @@ import { mockTutors } from "@/data/tutors";
 import { getTutorProfiles } from "@/lib/api";
 import type { Profile } from "@/lib/api";
 import { useUserLocation } from "@/hooks/useUserLocation";
-import { calculateDistanceKm, CITY_COORDINATES } from "@/lib/geolocation";
+import { calculateDistanceKm, getFallbackCoordinates, CITY_COORDINATES } from "@/lib/geolocation";
 
 // Fix default Leaflet marker icons
 const tutorIcon = L.icon({
@@ -73,7 +73,7 @@ const MapView = () => {
           let lng = p.longitude;
           
           if (!lat || !lng) {
-            const fallback = CITY_COORDINATES[p.location || ""] || { latitude: 41.0082, longitude: 28.9784 };
+            const fallback = getFallbackCoordinates(p.location || "");
             lat = fallback.latitude;
             lng = fallback.longitude;
           }

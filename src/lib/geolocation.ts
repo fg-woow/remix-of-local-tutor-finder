@@ -119,4 +119,39 @@ export const CITY_COORDINATES: Record<string, Coordinates> = {
   "Ataşehir, Istanbul": { latitude: 40.9839, longitude: 29.1082 },
   "Ümraniye, Istanbul": { latitude: 41.0256, longitude: 29.0987 },
   "Kartal, Istanbul": { latitude: 40.8872, longitude: 29.1932 },
+  "Bağcılar, Istanbul": { latitude: 41.0335, longitude: 28.8579 },
 };
+
+/**
+ * Smart fallback coordinate finder.
+ * Attempts exact match, then fuzzy match based on district name.
+ */
+export function getFallbackCoordinates(location: string): Coordinates {
+  if (!location) return { latitude: 41.0082, longitude: 28.9784 }; // Istanbul center (Fatih)
+
+  const normalized = location.toLowerCase();
+
+  // Try exact match first
+  for (const [key, coords] of Object.entries(CITY_COORDINATES)) {
+    if (key.toLowerCase() === normalized) {
+      return coords;
+    }
+  }
+
+  // Try partial match (e.g. user entered "İstanbul, Bağcılar" or just "Bağcılar")
+  for (const [key, coords] of Object.entries(CITY_COORDINATES)) {
+    // Get just the district part (e.g. "Bağcılar")
+    const district = key.split(',')[0].trim().toLowerCase();
+    
+    // Turkish character normalizations for robust searching
+    const distNormalized = district.replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ç/g, 'c');
+    const locNormalized = normalized.replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ç/g, 'c');
+
+    if (locNormalized.includes(distNormalized)) {
+      return coords;
+    }
+  }
+
+  // Final fallback if nothing matches
+  return { latitude: 41.0082, longitude: 28.9784 };
+}
