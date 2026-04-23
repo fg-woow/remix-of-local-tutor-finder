@@ -4,7 +4,7 @@ import { getProfileByUserId, getUserRole, updateProfile as apiUpdateProfile } fr
 import type { User, Session } from "@supabase/supabase-js";
 import type { Profile } from "@/lib/api";
 
-type UserRole = "student" | "tutor";
+type UserRole = "student" | "tutor" | "parent";
 
 export interface UserProfile extends Profile {
   role?: UserRole;

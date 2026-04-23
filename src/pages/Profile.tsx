@@ -17,6 +17,7 @@ import {
   Edit,
   Sparkles,
   DollarSign,
+  Heart,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -75,8 +76,8 @@ const StudentProfile = ({ profile }: { profile: UserProfile }) => {
                 <div className="flex flex-wrap items-center gap-3">
                   <h1 className="text-2xl font-bold text-foreground">{profile.full_name}</h1>
                   <Badge variant="secondary" className="gap-1">
-                    <GraduationCap className="h-3 w-3" />
-                    Student
+                    {profile.role === "parent" ? <Heart className="h-3 w-3" /> : <GraduationCap className="h-3 w-3" />}
+                    {profile.role === "parent" ? "Parent" : "Student"}
                   </Badge>
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
@@ -137,8 +138,8 @@ const StudentProfile = ({ profile }: { profile: UserProfile }) => {
             </div>
             <h3 className="font-semibold text-foreground">My Bookings</h3>
             <p className="mt-1 text-sm text-muted-foreground">View your upcoming lessons</p>
-            <Button variant="outline" size="sm" className="mt-3" disabled>
-              Coming Soon
+            <Button variant="outline" size="sm" className="mt-3" asChild>
+              <a href="#session-history">View Bookings</a>
             </Button>
           </CardContent>
         </Card>
@@ -174,7 +175,7 @@ const StudentProfile = ({ profile }: { profile: UserProfile }) => {
             </div>
             <div className="flex items-center justify-between py-2 border-b">
               <span className="text-muted-foreground">Role</span>
-              <Badge variant="secondary">Student</Badge>
+              <Badge variant="secondary">{profile.role === "parent" ? "Parent" : "Student"}</Badge>
             </div>
             <div className="flex items-center justify-between py-2">
               <span className="text-muted-foreground">Member Since</span>
@@ -191,7 +192,7 @@ const StudentProfile = ({ profile }: { profile: UserProfile }) => {
       </Card>
 
       {/* Session History */}
-      <div>
+      <div id="session-history" className="scroll-mt-24">
         <h2 className="text-xl font-bold mb-4 text-foreground">Session History</h2>
         <SessionHistory />
       </div>
