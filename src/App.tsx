@@ -18,36 +18,39 @@ import Messages from "./pages/Messages";
 import MapView from "./pages/MapView";
 import Bookings from "./pages/Bookings";
 import NotFound from "./pages/NotFound";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/tutors" element={<Tutors />} />
-            <Route path="/tutors/:id" element={<TutorProfile />} />
-            <Route path="/become-tutor" element={<BecomeTutor />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/profile/edit" element={<ProfileEdit />} />
-            <Route path="/parent-dashboard" element={<ParentDashboard />} />
-            <Route path="/favorites" element={<Favorites />} />
-            <Route path="/messages" element={<Messages />} />
-            <Route path="/map" element={<MapView />} />
-            <Route path="/bookings" element={<Bookings />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/tutors" element={<Tutors />} />
+              <Route path="/tutors/:id" element={<TutorProfile />} />
+              <Route path="/become-tutor" element={<BecomeTutor />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/edit" element={<ProfileEdit />} />
+              <Route path="/parent-dashboard" element={<ParentDashboard />} />
+              <Route path="/favorites" element={<Favorites />} />
+              <Route path="/messages" element={<Messages />} />
+              <Route path="/map" element={<MapView />} />
+              <Route path="/bookings" element={<Bookings />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;

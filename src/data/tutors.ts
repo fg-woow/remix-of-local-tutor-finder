@@ -376,7 +376,11 @@ export const subjects = [
   "Spanish",
   "French",
   "Music",
-  "Art"
+  "Art",
+  "YKS Hazırlık",
+  "LGS Hazırlık",
+  "TYT/AYT",
+  "DGS"
 ];
 
 export const locations = [

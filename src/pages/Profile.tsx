@@ -14,10 +14,11 @@ import {
   Video,
   FileText,
   Calendar,
-  Edit,
   Sparkles,
   DollarSign,
   Heart,
+  Trophy,
+  Medal
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -156,6 +157,40 @@ const StudentProfile = ({ profile }: { profile: UserProfile }) => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Badges & Rewards */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-amber-500" />
+            Achievements & Badges
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4">
+            <div className="flex flex-col items-center gap-1 p-3 rounded-xl bg-muted/50 w-24 text-center">
+              <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-1">
+                <Medal className="h-5 w-5" />
+              </div>
+              <span className="text-xs font-semibold text-foreground">Fast Learner</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 p-3 rounded-xl bg-muted/50 w-24 text-center">
+              <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 mb-1">
+                <BookOpen className="h-5 w-5" />
+              </div>
+              <span className="text-xs font-semibold text-foreground">First Lesson</span>
+            </div>
+            {isNew && (
+              <div className="flex flex-col items-center gap-1 p-3 rounded-xl bg-muted/50 w-24 text-center">
+                <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-1">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <span className="text-xs font-semibold text-foreground">New Member</span>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Account Info */}
       <Card>

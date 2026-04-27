@@ -10,7 +10,7 @@ import { isFavorited, toggleFavorite } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 
 interface TutorCardProps {
-  tutor: Tutor;
+  tutor: Tutor & { originalRate?: number };
 }
 
 const isNewTutor = (createdAt?: string): boolean => {
@@ -137,9 +137,21 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
                   <Clock className="h-3.5 w-3.5" />
                   <span>{tutor.experience}</span>
                 </div>
-                <span className="font-semibold text-foreground">
-                  ${tutor.hourlyRate}/hr
-                </span>
+                <div className="flex flex-col items-end">
+                  {tutor.originalRate && tutor.originalRate > tutor.hourlyRate && (
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <span className="text-xs font-medium text-red-500 bg-red-100 dark:bg-red-900/30 px-1 rounded">
+                        Save {Math.round(((tutor.originalRate - tutor.hourlyRate) / tutor.originalRate) * 100)}%
+                      </span>
+                      <span className="text-xs text-muted-foreground line-through">
+                        ${tutor.originalRate}/hr
+                      </span>
+                    </div>
+                  )}
+                  <span className="font-semibold text-foreground text-lg text-primary">
+                    ${tutor.hourlyRate}<span className="text-sm font-normal text-muted-foreground">/hr</span>
+                  </span>
+                </div>
               </div>
               <Button size="sm" asChild className="transition-transform duration-200 hover:scale-105">
                 <Link to={`/tutors/${tutor.id}`}>View Profile</Link>

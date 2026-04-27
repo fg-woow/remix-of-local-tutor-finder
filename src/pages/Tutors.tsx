@@ -123,6 +123,7 @@ const Tutors = () => {
         latitude: t.latitude ?? undefined,
         longitude: t.longitude ?? undefined,
         distance,
+        originalRate: t.offers_trial ? (t.hourly_rate || 0) + 20 : undefined,
       };
     });
 
@@ -142,6 +143,7 @@ const Tutors = () => {
           createdAt: t.createdAt || undefined,
           studentLevel: t.studentLevel || ["High School", "University"] as string[],
           distance,
+          originalRate: t.id === "00000001-0000-0000-0000-000000000000" ? t.hourlyRate + 15 : undefined,
         };
       });
 

@@ -10,6 +10,7 @@ import { Calendar, Clock, User, XCircle, CheckCircle } from "lucide-react";
 import { format, isPast, parse } from "date-fns";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Countdown } from "@/components/Countdown";
 
 export default function SessionHistory() {
   const { user, role } = useAuth();
@@ -141,10 +142,13 @@ export default function SessionHistory() {
                     <Calendar className="h-4 w-4 text-primary" />
                     {format(new Date(booking.booking_date), "MMM d, yyyy")}
                   </div>
-                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
                     <Clock className="h-4 w-4" />
                     {booking.time_slot}
                   </div>
+                  {!booking.isPast && booking.displayStatus !== "cancelled" && (
+                    <Countdown dateStr={booking.booking_date} timeStr={booking.time_slot} />
+                  )}
                 </div>
 
                 {/* Details Section */}

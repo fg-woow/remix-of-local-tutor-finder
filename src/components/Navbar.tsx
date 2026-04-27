@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { BookOpen, User, LogOut, Menu, X, Edit, Heart, MessageSquare, LayoutDashboard } from "lucide-react";
+import { BookOpen, User, LogOut, Menu, X, Edit, Heart, MessageSquare, LayoutDashboard, Sun, Moon, Globe } from "lucide-react";
+import { useTheme } from "@/components/ThemeProvider";
+import { useTranslation } from "react-i18next";
 import NotificationBell from "@/components/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -23,6 +25,12 @@ import {
 const Navbar = () => {
   const { user, profile, role, signOut, isLoading } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const { t, i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === 'en' ? 'tr' : 'en');
+  };
 
   const getInitials = (name: string) => {
     return name
@@ -40,7 +48,7 @@ const Navbar = () => {
         onClick={onClick}
         className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
-        Find Tutors
+        {t("tutors")}
       </Link>
       <Link
         to="/map"
@@ -95,6 +103,29 @@ const Navbar = () => {
         </nav>
 
         <div className="flex items-center gap-2">
+          {/* Toggles for Theme and Language */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleLanguage}
+            title={t("language")}
+            className="hidden md:flex"
+          >
+            <Globe className="h-[1.2rem] w-[1.2rem]" />
+            <span className="sr-only">Toggle language</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            title={t("dark_mode")}
+            className="hidden md:flex"
+          >
+            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+
           {isLoading ? (
             <div className="h-9 w-20 animate-pulse rounded-md bg-muted" />
           ) : user ? (
@@ -181,10 +212,10 @@ const Navbar = () => {
           ) : (
             <>
               <Button variant="ghost" size="sm" asChild className="hidden md:inline-flex">
-                <Link to="/login">Log in</Link>
+                <Link to="/login">{t("login")}</Link>
               </Button>
               <Button size="sm" asChild className="hidden md:inline-flex">
-                <Link to="/signup">Sign up</Link>
+                <Link to="/signup">{t("signup")}</Link>
               </Button>
             </>
           )}
@@ -206,6 +237,24 @@ const Navbar = () => {
                 </SheetTitle>
               </SheetHeader>
               <nav className="mt-8 flex flex-col gap-4">
+                <div className="flex items-center gap-4 mb-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={toggleLanguage}
+                    title={t("language")}
+                  >
+                    <Globe className="h-[1.2rem] w-[1.2rem]" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    title={t("dark_mode")}
+                  >
+                    {theme === "dark" ? <Sun className="h-[1.2rem] w-[1.2rem]" /> : <Moon className="h-[1.2rem] w-[1.2rem]" />}
+                  </Button>
+                </div>
                 <NavLinks onClick={() => setMobileOpen(false)} />
                 {!user && (
                   <>
