@@ -57,7 +57,7 @@ const Navbar = () => {
         onClick={onClick}
         className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-1"
       >
-        Map View
+        {t("nav.map_view", { defaultValue: "Map View" })}
       </Link>
       {!user && (
         <Link
@@ -65,7 +65,7 @@ const Navbar = () => {
           onClick={onClick}
           className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
-          Become a Tutor
+          {t("nav.become_tutor", { defaultValue: "Become a Tutor" })}
         </Link>
       )}
       {user && role === "parent" && (
@@ -74,7 +74,7 @@ const Navbar = () => {
           onClick={onClick}
           className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
-          Dashboard
+          {t("nav.dashboard", { defaultValue: "Dashboard" })}
         </Link>
       )}
       {user && (
@@ -83,7 +83,7 @@ const Navbar = () => {
           onClick={onClick}
           className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
-          My Profile
+          {t("nav.my_profile", { defaultValue: "My Profile" })}
         </Link>
       )}
     </>

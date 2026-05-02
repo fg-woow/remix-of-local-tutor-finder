@@ -44,7 +44,7 @@ const Index = () => {
                 className="text-center lg:text-left"
               >
                 <span className="mb-4 inline-block rounded-full bg-primary-light px-4 py-1.5 text-sm font-medium text-primary-dark">
-                  Face-to-face learning made easy
+                  {t("hero.tagline", { defaultValue: "Face-to-face learning made easy" })}
                 </span>
                 <h1 className="mb-6 text-4xl font-bold leading-tight text-foreground md:text-5xl lg:text-6xl">
                   {t("hero.title")}
@@ -66,7 +66,7 @@ const Index = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-primary" />
-                    <span>{t("features.flexible")}</span>
+                    <span>{t("hero.free_browse", { defaultValue: "Free to browse" })}</span>
                   </div>
                 </div>
               </motion.div>
@@ -98,10 +98,10 @@ const Index = () => {
               className="mb-12 text-center"
             >
               <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
-                How Learnnear works
+                {t("how_it_works.title", { defaultValue: "How Learnnear works" })}
               </h2>
               <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-                Finding the right tutor has never been easier. Just three simple steps.
+                {t("how_it_works.subtitle", { defaultValue: "Finding the right tutor has never been easier. Just three simple steps." })}
               </p>
             </motion.div>
 
@@ -115,18 +115,18 @@ const Index = () => {
               {[
                 {
                   icon: Users,
-                  title: "Browse Tutors",
-                  description: "Search by subject and location to find qualified tutors in your area.",
+                  title: t("how_it_works.step1_title", { defaultValue: "Browse Tutors" }),
+                  description: t("how_it_works.step1_desc", { defaultValue: "Search by subject and location to find qualified tutors in your area." }),
                 },
                 {
                   icon: MapPin,
-                  title: "View Profiles",
-                  description: "Check ratings, reviews, experience, and teaching style before you decide.",
+                  title: t("how_it_works.step2_title", { defaultValue: "View Profiles" }),
+                  description: t("how_it_works.step2_desc", { defaultValue: "Check ratings, reviews, experience, and teaching style before you decide." }),
                 },
                 {
                   icon: Clock,
-                  title: "Start Learning",
-                  description: "Contact your chosen tutor and schedule your first face-to-face lesson.",
+                  title: t("how_it_works.step3_title", { defaultValue: "Start Learning" }),
+                  description: t("how_it_works.step3_desc", { defaultValue: "Contact your chosen tutor and schedule your first face-to-face lesson." }),
                 },
               ].map((step, index) => (
                 <motion.div
@@ -160,15 +160,15 @@ const Index = () => {
             >
               <div>
                 <h2 className="mb-2 text-3xl font-bold text-foreground md:text-4xl">
-                  Featured Tutors
+                  {t("featured.title", { defaultValue: "Featured Tutors" })}
                 </h2>
                 <p className="text-lg text-muted-foreground">
-                  Highly rated instructors ready to help you succeed
+                  {t("featured.subtitle", { defaultValue: "Highly rated instructors ready to help you succeed" })}
                 </p>
               </div>
               <Button variant="outline" asChild>
                 <Link to="/tutors">
-                  View all tutors
+                  {t("featured.view_all", { defaultValue: "View all tutors" })}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -201,15 +201,14 @@ const Index = () => {
               className="rounded-3xl bg-primary p-8 text-center md:p-16"
             >
               <h2 className="mb-4 text-3xl font-bold text-primary-foreground md:text-4xl">
-                Ready to start learning?
+                {t("cta.title", { defaultValue: "Ready to start learning?" })}
               </h2>
               <p className="mx-auto mb-8 max-w-2xl text-lg text-primary-foreground/80">
-                Join thousands of students who found their perfect tutor on Learnnear. 
-                Start your learning journey today.
+                {t("cta.subtitle", { defaultValue: "Join thousands of students who found their perfect tutor on Learnnear. Start your learning journey today." })}
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Button variant="secondary" size="xl" asChild>
-                  <Link to="/tutors">Find a Tutor</Link>
+                  <Link to="/tutors">{t("cta.find_tutor", { defaultValue: "Find a Tutor" })}</Link>
                 </Button>
                 <Button
                   variant="hero-outline"
@@ -217,7 +216,7 @@ const Index = () => {
                   className="border-primary-foreground/30 text-primary-foreground hover:border-primary-foreground hover:text-primary-foreground"
                   asChild
                 >
-                  <Link to="/become-tutor">Become a Tutor</Link>
+                  <Link to="/become-tutor">{t("cta.become_tutor", { defaultValue: "Become a Tutor" })}</Link>
                 </Button>
               </div>
             </motion.div>

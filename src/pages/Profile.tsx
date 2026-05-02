@@ -18,7 +18,8 @@ import {
   DollarSign,
   Heart,
   Trophy,
-  Medal
+  Medal,
+  Edit
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";

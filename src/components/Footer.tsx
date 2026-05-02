@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { BookOpen } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const Footer = () => {
+  const { t } = useTranslation();
   return (
     <footer className="border-t bg-card py-12">
       <div className="container">
@@ -14,7 +16,7 @@ const Footer = () => {
               <span className="text-xl font-bold text-foreground">Learnnear</span>
             </Link>
             <p className="text-sm text-muted-foreground">
-              Find the right face-to-face teacher near you in minutes.
+              {t("hero.subtitle", { defaultValue: "Find the right face-to-face teacher near you in minutes." })}
             </p>
           </div>
 
@@ -23,28 +25,28 @@ const Footer = () => {
             <ul className="space-y-2">
               <li>
                 <Link to="/tutors" className="text-sm text-muted-foreground hover:text-foreground">
-                  Find Tutors
+                  {t("footer.find_tutors", { defaultValue: "Find Tutors" })}
                 </Link>
               </li>
               <li>
                 <Link to="/signup" className="text-sm text-muted-foreground hover:text-foreground">
-                  Create Account
+                  {t("nav.signup", { defaultValue: "Create Account" })}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="mb-4 text-sm font-semibold text-foreground">For Tutors</h4>
+            <h4 className="mb-4 text-sm font-semibold text-foreground">{t("footer.for_tutors", { defaultValue: "For Tutors" })}</h4>
             <ul className="space-y-2">
               <li>
                 <Link to="/become-tutor" className="text-sm text-muted-foreground hover:text-foreground">
-                  Become a Tutor
+                  {t("footer.become_tutor", { defaultValue: "Become a Tutor" })}
                 </Link>
               </li>
               <li>
                 <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground">
-                  Tutor Login
+                  {t("nav.login", { defaultValue: "Tutor Login" })}
                 </Link>
               </li>
             </ul>
@@ -63,7 +65,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Learnnear. All rights reserved.
+          © {new Date().getFullYear()} Learnnear. {t("footer.rights_reserved", { defaultValue: "All rights reserved." })}
         </div>
       </div>
     </footer>
