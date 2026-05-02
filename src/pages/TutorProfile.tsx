@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Star, MapPin, Clock, ArrowLeft, Mail, CheckCircle, Calendar, GraduationCap, Award, Users, FileText, Video, Sparkles, Heart, MessageSquare, Gift } from "lucide-react";
+import { Star, MapPin, Clock, ArrowLeft, Mail, CheckCircle, Calendar, GraduationCap, Award, Users, FileText, Video, Sparkles, Heart, MessageSquare, Gift, Play } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import TutorMap from "@/components/TutorMap";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { calculateDistanceKm, getFallbackCoordinates } from "@/lib/geolocation";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 
 interface EnhancedTutor extends Tutor {
   education?: string;
@@ -216,13 +217,44 @@ const TutorProfile = () => {
                   {/* Header */}
                   <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-start">
                     <div className="relative">
-                      <img
-                        src={tutor.avatar}
-                        alt={tutor.name}
-                        className="h-32 w-32 rounded-2xl object-cover shadow-md"
-                      />
+                      {embedUrl ? (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <div className="relative cursor-pointer group">
+                              <img
+                                src={tutor.avatar}
+                                alt={tutor.name}
+                                className="h-32 w-32 rounded-2xl object-cover shadow-md transition-all group-hover:brightness-75"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="rounded-full bg-black/40 p-2 backdrop-blur-sm transition-transform group-hover:scale-110">
+                                  <Play className="h-8 w-8 text-white fill-white" />
+                                </div>
+                              </div>
+                            </div>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden bg-black/90 border-none">
+                            <DialogTitle className="sr-only">Introduction Video</DialogTitle>
+                            <div className="aspect-video w-full">
+                              <iframe
+                                src={embedUrl + (embedUrl.includes('?') ? '&autoplay=1' : '?autoplay=1')}
+                                className="w-full h-full"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                title="Tutor introduction video"
+                              />
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      ) : (
+                        <img
+                          src={tutor.avatar}
+                          alt={tutor.name}
+                          className="h-32 w-32 rounded-2xl object-cover shadow-md"
+                        />
+                      )}
                       {isNew && (
-                        <Badge variant="new" className="absolute -top-2 -right-2 gap-1">
+                        <Badge variant="new" className="absolute -top-2 -right-2 gap-1 z-10">
                           <Sparkles className="h-3 w-3" />
                           New
                         </Badge>
@@ -386,26 +418,7 @@ const TutorProfile = () => {
                 </CardContent>
               </Card>
 
-              {/* Intro Video */}
-              {embedUrl && (
-                <Card>
-                  <CardContent className="p-6">
-                    <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
-                      <Video className="h-5 w-5 text-primary" />
-                      Introduction Video
-                    </h2>
-                    <div className="aspect-video rounded-lg overflow-hidden">
-                      <iframe
-                        src={embedUrl}
-                        className="w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        title="Tutor introduction video"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+
 
               {/* Reviews Section */}
               <Card>
