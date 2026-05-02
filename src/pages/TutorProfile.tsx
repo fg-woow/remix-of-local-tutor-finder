@@ -36,9 +36,16 @@ const isNewTutor = (createdAt?: string): boolean => {
   return created > thirtyDaysAgo;
 };
 
-const getYouTubeEmbedUrl = (url: string): string | null => {
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
-  return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+const getVideoEmbedUrl = (url: string): string | null => {
+  // Check YouTube
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+  
+  // Check Streamable
+  const streamableMatch = url.match(/streamable\.com\/([a-zA-Z0-9]+)/);
+  if (streamableMatch) return `https://streamable.com/e/${streamableMatch[1]}`;
+  
+  return null;
 };
 
 const TutorProfile = () => {
@@ -110,6 +117,7 @@ const TutorProfile = () => {
             course_topics: [],
             teaching_levels: ["High School", "University"],
             suitable_for: ["Exam Preparation", "Beginners"],
+            intro_video_url: mockTutor.intro_video_url,
           });
         }
       }
@@ -150,7 +158,7 @@ const TutorProfile = () => {
     );
   }
 
-  const embedUrl = tutor.intro_video_url ? getYouTubeEmbedUrl(tutor.intro_video_url) : null;
+  const embedUrl = tutor.intro_video_url ? getVideoEmbedUrl(tutor.intro_video_url) : null;
 
   const handleFavoriteClick = async () => {
     if (!user) {

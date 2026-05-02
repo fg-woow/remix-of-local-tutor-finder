@@ -25,6 +25,7 @@ export interface Tutor {
   latitude?: number;
   longitude?: number;
   distance?: number; // distance in km from user
+  intro_video_url?: string;
 }
 
 export const studentLevels = [
@@ -340,6 +341,7 @@ export const mockTutors: Tutor[] = [
     experience: "4 years",
     studentLevel: ["University", "Adult Learner"],
     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    intro_video_url: "https://streamable.com/71xxpu",
     reviews: [
       {
         id: "r16",
