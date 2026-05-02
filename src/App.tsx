@@ -14,6 +14,7 @@ import Profile from "./pages/Profile";
 import ProfileEdit from "./pages/ProfileEdit";
 import ParentDashboard from "./pages/ParentDashboard";
 import TutorDashboard from "./pages/TutorDashboard";
+import StudentDashboard from "./pages/StudentDashboard";
 import Favorites from "./pages/Favorites";
 import Messages from "./pages/Messages";
 import MapView from "./pages/MapView";
@@ -63,6 +64,7 @@ const App = () => {
                 <Route path="/profile/edit" element={<ProfileEdit />} />
                 <Route path="/parent-dashboard" element={<ParentDashboard />} />
                 <Route path="/tutor-dashboard" element={<TutorDashboard />} />
+                <Route path="/student-dashboard" element={<StudentDashboard />} />
                 <Route path="/favorites" element={<Favorites />} />
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/map" element={<MapView />} />

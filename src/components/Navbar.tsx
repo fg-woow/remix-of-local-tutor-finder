@@ -86,6 +86,15 @@ const Navbar = () => {
           {t("nav.dashboard", { defaultValue: "Dashboard" })}
         </Link>
       )}
+      {user && role === "student" && (
+        <Link
+          to="/student-dashboard"
+          onClick={onClick}
+          className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          {t("nav.dashboard", { defaultValue: "Dashboard" })}
+        </Link>
+      )}
       {user && (
         <Link
           to="/profile"
@@ -217,6 +226,14 @@ const Navbar = () => {
                     </Link>
                   </DropdownMenuItem>
                 )}
+                {role === "student" && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/student-dashboard" className="cursor-pointer">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Student Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem asChild>
                   <Link to="/favorites" className="cursor-pointer">
                     <Heart className="mr-2 h-4 w-4" />
@@ -345,6 +362,16 @@ const Navbar = () => {
                       >
                         <LayoutDashboard className="h-4 w-4" />
                         Tutor Dashboard
+                      </Link>
+                    )}
+                    {role === "student" && (
+                      <Link
+                        to="/student-dashboard"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        <LayoutDashboard className="h-4 w-4" />
+                        Student Dashboard
                       </Link>
                     )}
                     <Link
