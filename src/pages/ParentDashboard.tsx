@@ -97,10 +97,10 @@ const CircularProgress = ({ value, max, size = 100, strokeWidth = 8 }: { value: 
           cy={size / 2}
         />
       </svg>
-      <div className="absolute flex flex-col items-center justify-center text-center">
-        <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Wallet Balance</span>
-        <span className="text-xl font-bold text-foreground">${value.toFixed(2)}</span>
-        <span className="text-[10px] text-muted-foreground">of ${max.toFixed(2)}</span>
+      <div className="absolute flex flex-col items-center justify-center text-center px-2">
+        <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold leading-tight mb-1">Wallet<br/>Balance</span>
+        <span className="text-2xl font-extrabold text-foreground leading-none">${value.toFixed(2)}</span>
+        <span className="text-[10px] text-muted-foreground mt-1">of ${max.toFixed(2)}</span>
       </div>
     </div>
   );
@@ -260,8 +260,8 @@ const ParentDashboard = () => {
                 </p>
               </div>
               
-              <div className="flex items-center gap-4 bg-white dark:bg-card p-4 rounded-3xl shadow-sm border">
-                <CircularProgress value={45} max={100} size={80} strokeWidth={6} />
+              <div className="flex items-center gap-4 bg-white dark:bg-card p-4 pr-6 rounded-3xl shadow-sm border">
+                <CircularProgress value={45} max={100} size={110} strokeWidth={5} />
                 <Button size="icon" className="rounded-full h-10 w-10 shrink-0 shadow-md bg-teal-500 hover:bg-teal-600">
                   <Plus className="h-5 w-5" />
                 </Button>
