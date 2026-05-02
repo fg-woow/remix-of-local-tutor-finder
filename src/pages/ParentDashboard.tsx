@@ -34,6 +34,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -101,6 +102,94 @@ const CircularProgress = ({ value, max, size = 100, strokeWidth = 8 }: { value: 
         <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold leading-tight mb-1">Wallet<br/>Balance</span>
         <span className="text-2xl font-extrabold text-foreground leading-none">${value.toFixed(2)}</span>
         <span className="text-[10px] text-muted-foreground mt-1">of ${max.toFixed(2)}</span>
+      </div>
+    </div>
+  );
+};
+
+const CalendarWidget = ({ bookings }: { bookings: any[] }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const prevMonthDays = new Date(year, month, 0).getDate();
+
+  const days = [];
+  
+  // Previous month filler days
+  for (let i = firstDayOfMonth - 1; i >= 0; i--) {
+    days.push({ day: prevMonthDays - i, isCurrentMonth: false, date: new Date(year, month - 1, prevMonthDays - i) });
+  }
+  
+  // Current month days
+  for (let i = 1; i <= daysInMonth; i++) {
+    days.push({ day: i, isCurrentMonth: true, date: new Date(year, month, i) });
+  }
+
+  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
+  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+  return (
+    <div className="mb-4">
+      <div className="flex justify-between items-center mb-4">
+        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={prevMonth}><ChevronLeft className="h-4 w-4" /></Button>
+        <span className="font-semibold text-sm">{monthNames[month]} {year}</span>
+        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={nextMonth}><ChevronRight className="h-4 w-4" /></Button>
+      </div>
+      <div className="grid grid-cols-7 text-center text-xs text-muted-foreground font-medium mb-2">
+        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+      </div>
+      <div className="grid grid-cols-7 text-center text-sm gap-y-2">
+        <TooltipProvider>
+          {days.map((d, idx) => {
+            const dayBookings = bookings.filter(b => {
+              const bDate = new Date(b.booking_date);
+              return bDate.getDate() === d.day && bDate.getMonth() === d.date.getMonth() && bDate.getFullYear() === d.date.getFullYear();
+            });
+            const hasBookings = dayBookings.length > 0;
+            const isToday = new Date().toDateString() === d.date.toDateString();
+
+            if (!d.isCurrentMonth) {
+              return <div key={idx} className="text-muted-foreground/30">{d.day}</div>;
+            }
+
+            return (
+              <Tooltip key={idx} delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <div className={`mx-auto flex h-7 w-7 items-center justify-center rounded-full cursor-pointer transition-colors
+                    ${hasBookings ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90" : "hover:bg-muted"}
+                    ${!hasBookings && isToday ? "border border-primary text-primary" : ""}
+                  `}>
+                    {d.day}
+                  </div>
+                </TooltipTrigger>
+                {hasBookings && (
+                  <TooltipContent className="p-3 max-w-[250px] bg-white dark:bg-card border shadow-lg text-foreground" sideOffset={5}>
+                    <p className="font-bold mb-2 text-sm border-b pb-1 border-border">
+                      {d.date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </p>
+                    <div className="space-y-2">
+                      {dayBookings.map((b, i) => (
+                        <div key={i} className="flex justify-between items-start gap-3">
+                          <div>
+                            <p className="font-semibold text-xs leading-none">{b.childName}</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">with {b.tutorName}</p>
+                          </div>
+                          <Badge variant="secondary" className="text-[9px] px-1 py-0">{b.time_slot}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            );
+          })}
+        </TooltipProvider>
       </div>
     </div>
   );
@@ -357,26 +446,7 @@ const ParentDashboard = () => {
                       <Link to="#" className="text-xs font-semibold text-primary">View Calendar</Link>
                     </CardHeader>
                     <CardContent className="flex-1">
-                      {/* Simple Mock Calendar */}
-                      <div className="mb-4">
-                        <div className="flex justify-between items-center mb-4">
-                          <Button variant="ghost" size="icon" className="h-6 w-6"><ChevronLeft className="h-4 w-4" /></Button>
-                          <span className="font-semibold text-sm">May 2026</span>
-                          <Button variant="ghost" size="icon" className="h-6 w-6"><ChevronRight className="h-4 w-4" /></Button>
-                        </div>
-                        <div className="grid grid-cols-7 text-center text-xs text-muted-foreground font-medium mb-2">
-                          <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-                        </div>
-                        <div className="grid grid-cols-7 text-center text-sm gap-y-2">
-                          <div className="text-muted-foreground/30">26</div><div className="text-muted-foreground/30">27</div><div className="text-muted-foreground/30">28</div><div className="text-muted-foreground/30">29</div><div className="text-muted-foreground/30">30</div><div>1</div><div>2</div>
-                          <div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div>
-                          <div>10</div><div>11</div><div>12</div><div>13</div><div>14</div><div>15</div><div>16</div>
-                          <div>17</div><div>18</div><div>19</div>
-                          <div className="bg-primary text-primary-foreground rounded-full w-7 h-7 flex items-center justify-center mx-auto shadow-sm">20</div>
-                          <div>21</div><div>22</div><div>23</div>
-                          <div>24</div><div>25</div><div>26</div><div>27</div><div>28</div><div>29</div><div>30</div>
-                        </div>
-                      </div>
+                      <CalendarWidget bookings={upcomingBookings} />
                       
                       <div className="mt-auto bg-muted/30 p-3 rounded-xl flex items-center justify-between border">
                         <div className="flex items-center gap-2">
