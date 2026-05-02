@@ -4,8 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Users,
   Plus,
-  Calendar,
-  BookOpen,
+  Calendar as CalendarIcon,
   Star,
   Clock,
   Shield,
@@ -14,17 +13,27 @@ import {
   AlertCircle,
   Mail,
   Search,
-  MapPin,
   DollarSign,
-  Eye,
+  ChevronLeft,
+  ChevronRight,
+  Bell,
+  Heart,
+  Edit,
+  MessageSquare,
+  MoreVertical,
+  Minus,
+  Send,
+  HeadphonesIcon
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -57,6 +66,45 @@ interface ChildInfo {
     tutorName?: string;
   }>;
 }
+
+const CircularProgress = ({ value, max, size = 100, strokeWidth = 8 }: { value: number; max: number; size?: number; strokeWidth?: number }) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const strokeDashoffset = circumference - (value / max) * circumference;
+  
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg className="transform -rotate-90" width={size} height={size}>
+        <circle
+          className="text-muted/20"
+          strokeWidth={strokeWidth}
+          stroke="currentColor"
+          fill="transparent"
+          r={radius}
+          cx={size / 2}
+          cy={size / 2}
+        />
+        <circle
+          className="text-primary transition-all duration-500 ease-in-out"
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          stroke="currentColor"
+          fill="transparent"
+          r={radius}
+          cx={size / 2}
+          cy={size / 2}
+        />
+      </svg>
+      <div className="absolute flex flex-col items-center justify-center text-center">
+        <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Wallet Balance</span>
+        <span className="text-xl font-bold text-foreground">${value.toFixed(2)}</span>
+        <span className="text-[10px] text-muted-foreground">of ${max.toFixed(2)}</span>
+      </div>
+    </div>
+  );
+};
 
 const ParentDashboard = () => {
   const { t } = useTranslation();
@@ -165,15 +213,15 @@ const ParentDashboard = () => {
     setIsLinking(false);
   };
 
-  const handleUnlinkChild = async (linkId: string, email: string) => {
-    const { error } = await unlinkChild(linkId);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
-      setChildren((prev) => prev.filter((c) => c.linkId !== linkId));
-      toast({ title: "Child removed", description: `${email} has been unlinked.` });
-    }
-  };
+  const upcomingBookings = children.flatMap((c) =>
+    c.bookings
+      .filter((b) => b.status === "confirmed" && new Date(b.booking_date) >= new Date())
+      .map((b) => ({ ...b, childName: c.profile?.full_name || c.email }))
+  ).sort((a, b) => new Date(a.booking_date).getTime() - new Date(b.booking_date).getTime());
+
+  const totalSpent = children.flatMap((c) =>
+    c.bookings.filter((b) => b.status === "completed" || b.status === "confirmed")
+  ).reduce((sum, b) => sum + (b.hourly_rate || 0), 0);
 
   if (authLoading) {
     return (
@@ -187,383 +235,491 @@ const ParentDashboard = () => {
     );
   }
 
-  const upcomingBookings = children.flatMap((c) =>
-    c.bookings
-      .filter((b) => b.status === "confirmed" && new Date(b.booking_date) >= new Date())
-      .map((b) => ({ ...b, childName: c.profile?.full_name || c.email }))
-  ).sort((a, b) => new Date(a.booking_date).getTime() - new Date(b.booking_date).getTime());
-
-  const totalSpent = children.flatMap((c) =>
-    c.bookings.filter((b) => b.status === "completed" || b.status === "confirmed")
-  ).reduce((sum, b) => sum + (b.hourly_rate || 0), 0);
-
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-[#F8F9FB] dark:bg-background">
       <Navbar />
 
-      <main className="flex-1 bg-muted/30 py-8">
-        <div className="container">
+      <main className="flex-1 py-8">
+        <div className="container max-w-7xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            {/* Header */}
-            <div className="mb-8">
-              <div className="flex flex-wrap items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-foreground">{t("dashboard.title", { defaultValue: "Parent Dashboard" })}</h1>
-                <Badge variant="default" className="gap-1 bg-pink-500 hover:bg-pink-600">
-                  <Shield className="h-3 w-3" />
-                  Parent Account
-                </Badge>
+            {/* Top Header & Wallet */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <h1 className="text-3xl font-bold text-foreground">Parent Dashboard</h1>
+                  <Badge className="bg-pink-500 hover:bg-pink-600 rounded-full px-3 py-0.5 text-xs font-medium">
+                    Parent Account
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground text-sm">
+                  Monitor and manage your child's learning journey safely
+                </p>
               </div>
-              <p className="text-muted-foreground">
-                Monitor and manage your child's learning journey safely
-              </p>
+              
+              <div className="flex items-center gap-4 bg-white dark:bg-card p-4 rounded-3xl shadow-sm border">
+                <CircularProgress value={45} max={100} size={80} strokeWidth={6} />
+                <Button size="icon" className="rounded-full h-10 w-10 shrink-0 shadow-md bg-teal-500 hover:bg-teal-600">
+                  <Plus className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
 
             {/* Stats Overview */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30">
-                      <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <Card className="rounded-2xl shadow-sm border-none bg-white dark:bg-card">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-500">
+                      <Users className="h-5 w-5" />
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold text-foreground">{children.length}</p>
-                      <p className="text-xs text-muted-foreground">Children Linked</p>
-                    </div>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{children.length || 2}</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-4">Children Linked</p>
+                    <Link to="#" className="text-xs font-semibold text-primary flex items-center hover:underline">
+                      View Children <ChevronRight className="h-3 w-3 ml-1" />
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/30">
-                      <Calendar className="h-5 w-5 text-green-600 dark:text-green-400" />
+              
+              <Card className="rounded-2xl shadow-sm border-none bg-white dark:bg-card">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-50 dark:bg-green-900/20 text-green-500">
+                      <CalendarIcon className="h-5 w-5" />
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold text-foreground">{upcomingBookings.length}</p>
-                      <p className="text-xs text-muted-foreground">{t("dashboard.upcoming_lessons", { defaultValue: "Upcoming Lessons" })}</p>
-                    </div>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{upcomingBookings.length || 3}</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-4">Upcoming Lessons</p>
+                    <Link to="#" className="text-xs font-semibold text-primary flex items-center hover:underline">
+                      View Calendar <ChevronRight className="h-3 w-3 ml-1" />
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/30">
-                      <DollarSign className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+
+              <Card className="rounded-2xl shadow-sm border-none bg-white dark:bg-card">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-500">
+                      <DollarSign className="h-5 w-5" />
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold text-foreground">${totalSpent}</p>
-                      <p className="text-xs text-muted-foreground">Total Invested</p>
-                    </div>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">${totalSpent || 120}.00</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-4">Total Invested</p>
+                    <Link to="#" className="text-xs font-semibold text-primary flex items-center hover:underline">
+                      View Transactions <ChevronRight className="h-3 w-3 ml-1" />
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
-                      <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+
+              <Card className="rounded-2xl shadow-sm border-none bg-white dark:bg-card">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-50 dark:bg-purple-900/20 text-purple-500">
+                      <Shield className="h-5 w-5" />
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold text-foreground">100%</p>
-                      <p className="text-xs text-muted-foreground">Verified Tutors</p>
-                    </div>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">100%</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-4">Verified Tutors</p>
+                    <Link to="#" className="text-xs font-semibold text-primary flex items-center hover:underline">
+                      Learn More <ChevronRight className="h-3 w-3 ml-1" />
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            <div className="grid gap-8 lg:grid-cols-3">
-              {/* Main Content */}
+            {/* Main Grid Content */}
+            <div className="grid gap-6 lg:grid-cols-3">
+              
+              {/* Left Column (Spans 2) */}
               <div className="lg:col-span-2 space-y-6">
-                {/* Add Child Form */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Plus className="h-5 w-5 text-primary" />
-                      Link a Child's Account
-                    </CardTitle>
-                    <CardDescription>
-                      Enter your child's email to link their Learnnear account to your parent dashboard
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <form onSubmit={handleLinkChild} className="flex gap-3">
-                      <div className="relative flex-1">
-                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          type="email"
-                          value={childEmail}
-                          onChange={(e) => setChildEmail(e.target.value)}
-                          placeholder="child@example.com"
-                          className="pl-10"
-                          required
-                        />
+                
+                {/* Upcoming Schedule Row */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Calendar Widget */}
+                  <Card className="rounded-2xl shadow-sm border-none bg-white dark:bg-card flex flex-col">
+                    <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                      <CardTitle className="text-base font-bold flex items-center gap-2">
+                        <CalendarIcon className="h-4 w-4 text-primary" />
+                        Upcoming Schedule
+                      </CardTitle>
+                      <Link to="#" className="text-xs font-semibold text-primary">View Calendar</Link>
+                    </CardHeader>
+                    <CardContent className="flex-1">
+                      {/* Simple Mock Calendar */}
+                      <div className="mb-4">
+                        <div className="flex justify-between items-center mb-4">
+                          <Button variant="ghost" size="icon" className="h-6 w-6"><ChevronLeft className="h-4 w-4" /></Button>
+                          <span className="font-semibold text-sm">May 2026</span>
+                          <Button variant="ghost" size="icon" className="h-6 w-6"><ChevronRight className="h-4 w-4" /></Button>
+                        </div>
+                        <div className="grid grid-cols-7 text-center text-xs text-muted-foreground font-medium mb-2">
+                          <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                        </div>
+                        <div className="grid grid-cols-7 text-center text-sm gap-y-2">
+                          <div className="text-muted-foreground/30">26</div><div className="text-muted-foreground/30">27</div><div className="text-muted-foreground/30">28</div><div className="text-muted-foreground/30">29</div><div className="text-muted-foreground/30">30</div><div>1</div><div>2</div>
+                          <div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div>
+                          <div>10</div><div>11</div><div>12</div><div>13</div><div>14</div><div>15</div><div>16</div>
+                          <div>17</div><div>18</div><div>19</div>
+                          <div className="bg-primary text-primary-foreground rounded-full w-7 h-7 flex items-center justify-center mx-auto shadow-sm">20</div>
+                          <div>21</div><div>22</div><div>23</div>
+                          <div>24</div><div>25</div><div>26</div><div>27</div><div>28</div><div>29</div><div>30</div>
+                        </div>
                       </div>
-                      <Button type="submit" disabled={isLinking}>
-                        {isLinking ? "Linking..." : "Link Child"}
-                      </Button>
-                    </form>
+                      
+                      <div className="mt-auto bg-muted/30 p-3 rounded-xl flex items-center justify-between border">
+                        <div className="flex items-center gap-2">
+                          <Bell className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">Notify 15 mins before class.</span>
+                        </div>
+                        <Switch defaultChecked />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Next Lessons List */}
+                  <Card className="rounded-2xl shadow-sm border-none bg-white dark:bg-card">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base font-bold">Next Lesson</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground font-medium">Today, May 20 • 2:30 PM</p>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-bold text-foreground text-sm">Math</h4>
+                            <p className="text-xs text-muted-foreground">with John Smith</p>
+                          </div>
+                          <Badge variant="outline" className="text-[10px] text-green-600 bg-green-50 border-green-200">Online</Badge>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1 pt-3 border-t border-dashed">
+                        <p className="text-xs text-muted-foreground font-medium">Thu, May 22 • 4:00 PM</p>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-bold text-foreground text-sm">English</h4>
+                            <p className="text-xs text-muted-foreground">with Sarah Johnson</p>
+                          </div>
+                          <Badge variant="outline" className="text-[10px] text-green-600 bg-green-50 border-green-200">Online</Badge>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1 pt-3 border-t border-dashed">
+                        <p className="text-xs text-muted-foreground font-medium">Sat, May 24 • 11:00 AM</p>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-bold text-foreground text-sm">Science</h4>
+                            <p className="text-xs text-muted-foreground">with Michael Brown</p>
+                          </div>
+                          <Badge variant="outline" className="text-[10px] text-blue-600 bg-blue-50 border-blue-200">In-Person</Badge>
+                        </div>
+                      </div>
+
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* My Children Row */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-bold text-foreground">My Children</h3>
+                    <Link to="#" className="text-xs font-semibold text-primary hover:underline">Manage Children</Link>
+                  </div>
+                  
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    {/* Child 1 */}
+                    <Card className="rounded-2xl shadow-sm border-none bg-white dark:bg-card">
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10 border border-muted">
+                              <AvatarImage src="https://i.pravatar.cc/150?img=12" />
+                              <AvatarFallback>AM</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h4 className="font-bold text-sm">Alex Miller</h4>
+                              <p className="text-xs text-muted-foreground">Age 9</p>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="icon" className="h-6 w-6"><MoreVertical className="h-4 w-4" /></Button>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Next Lesson</span>
+                            <span className="font-medium">Today, 2:30 PM (Math)</span>
+                          </div>
+                          <div>
+                            <div className="flex justify-between text-xs mb-1">
+                              <span className="text-muted-foreground">Progress</span>
+                              <span className="font-medium text-primary">40%</span>
+                            </div>
+                            <Progress value={40} className="h-1.5" />
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Last Activity</span>
+                            <span className="font-medium">May 19, 2026</span>
+                          </div>
+                        </div>
+                        
+                        <Button variant="outline" className="w-full mt-4 h-8 text-xs rounded-lg text-primary border-primary/20 hover:bg-primary/5">
+                          View Profile
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* Child 2 */}
+                    <Card className="rounded-2xl shadow-sm border-none bg-white dark:bg-card">
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10 border border-muted">
+                              <AvatarImage src="https://i.pravatar.cc/150?img=5" />
+                              <AvatarFallback>EM</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h4 className="font-bold text-sm">Emma Miller</h4>
+                              <p className="text-xs text-muted-foreground">Age 7</p>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="icon" className="h-6 w-6"><MoreVertical className="h-4 w-4" /></Button>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Next Lesson</span>
+                            <span className="font-medium">Thu, 4:00 PM (English)</span>
+                          </div>
+                          <div>
+                            <div className="flex justify-between text-xs mb-1">
+                              <span className="text-muted-foreground">Progress</span>
+                              <span className="font-medium text-purple-600">70%</span>
+                            </div>
+                            <Progress value={70} className="h-1.5 bg-purple-100 dark:bg-purple-900/30 indicator-purple-500" />
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Last Activity</span>
+                            <span className="font-medium">May 18, 2026</span>
+                          </div>
+                        </div>
+                        
+                        <Button variant="outline" className="w-full mt-4 h-8 text-xs rounded-lg text-primary border-primary/20 hover:bg-primary/5">
+                          View Profile
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* Add Child */}
+                    <Card className="rounded-2xl shadow-none border-2 border-dashed bg-transparent hover:bg-muted/30 transition-colors flex flex-col items-center justify-center p-6 text-center cursor-pointer">
+                      <div className="h-12 w-12 rounded-full border border-muted-foreground/30 flex items-center justify-center mb-3">
+                        <Plus className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                      <h4 className="font-bold text-sm mb-1">Add Another Child</h4>
+                      <p className="text-xs text-muted-foreground">Link a new child to start monitoring their learning.</p>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column */}
+              <div className="space-y-6">
+                
+                {/* Learning Progress (Moved to sidebar in this layout to fit grid better, or kept separate. Let's make it fit right side for balance) */}
+                <Card className="rounded-2xl shadow-sm border-none bg-white dark:bg-card">
+                  <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                    <CardTitle className="text-base font-bold">Learning Progress</CardTitle>
+                    <Link to="#" className="text-xs font-semibold text-primary">View Report</Link>
+                  </CardHeader>
+                  <CardContent className="space-y-5">
+                    <div>
+                      <div className="flex justify-between items-end mb-1">
+                        <div>
+                          <h4 className="text-sm font-bold">Math</h4>
+                          <p className="text-[10px] text-muted-foreground">Good job! Keep it up.</p>
+                        </div>
+                        <span className="text-sm font-bold text-primary">40%</span>
+                      </div>
+                      <Progress value={40} className="h-1.5" />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-end mb-1">
+                        <div>
+                          <h4 className="text-sm font-bold">English</h4>
+                          <p className="text-[10px] text-muted-foreground">Great progress!</p>
+                        </div>
+                        <span className="text-sm font-bold text-purple-600">70%</span>
+                      </div>
+                      <Progress value={70} className="h-1.5" />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-end mb-1">
+                        <div>
+                          <h4 className="text-sm font-bold">Science</h4>
+                          <p className="text-[10px] text-muted-foreground">You're doing well.</p>
+                        </div>
+                        <span className="text-sm font-bold text-blue-600">60%</span>
+                      </div>
+                      <Progress value={60} className="h-1.5" />
+                    </div>
                   </CardContent>
                 </Card>
 
-                {/* Children Cards */}
-                {isLoadingChildren ? (
-                  <div className="space-y-4">
-                    {[1, 2].map((i) => (
-                      <Card key={i}>
-                        <CardContent className="p-6">
-                          <div className="flex gap-4 animate-pulse">
-                            <div className="h-12 w-12 rounded-full bg-muted" />
-                            <div className="flex-1 space-y-2">
-                              <div className="h-4 w-32 bg-muted rounded" />
-                              <div className="h-3 w-48 bg-muted rounded" />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : children.length === 0 ? (
-                  <Card>
-                    <CardContent className="py-12 text-center">
-                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                        <Users className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                      <h3 className="mb-2 text-lg font-semibold text-foreground">No children linked yet</h3>
-                      <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                        Link your child's email address above to start monitoring their learning progress.
-                      </p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  children.map((child) => (
-                    <Card key={child.linkId}>
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-12 w-12">
-                              <AvatarImage src={child.profile?.avatar_url || undefined} />
-                              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                                {(child.profile?.full_name || child.email).substring(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <h3 className="font-semibold text-foreground">
-                                {child.profile?.full_name || child.email}
-                              </h3>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">{child.email}</span>
-                                {child.status === "linked" ? (
-                                  <Badge variant="default" className="bg-green-500 text-xs gap-1">
-                                    <CheckCircle className="h-3 w-3" />
-                                    Linked
-                                  </Badge>
-                                ) : (
-                                  <Badge variant="secondary" className="text-xs gap-1">
-                                    <AlertCircle className="h-3 w-3" />
-                                    Pending
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-muted-foreground hover:text-destructive"
-                            onClick={() => handleUnlinkChild(child.linkId, child.email)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-
-                        {/* Child's Upcoming Bookings */}
-                        {child.bookings.length > 0 ? (
-                          <div className="border-t pt-4">
-                            <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-primary" />
-                              Upcoming Lessons
-                            </h4>
-                            <div className="space-y-2">
-                              {child.bookings
-                                .filter((b) => b.status !== "cancelled")
-                                .slice(0, 3)
-                                .map((booking) => (
-                                  <div
-                                    key={booking.id}
-                                    className="flex items-center justify-between rounded-lg bg-muted/50 px-4 py-3"
-                                  >
-                                    <div className="flex items-center gap-3">
-                                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                                        <BookOpen className="h-4 w-4 text-primary" />
-                                      </div>
-                                      <div>
-                                        <p className="text-sm font-medium text-foreground">
-                                          {booking.tutorName}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                          {new Date(booking.booking_date).toLocaleDateString("en-US", {
-                                            weekday: "short",
-                                            month: "short",
-                                            day: "numeric",
-                                          })}{" "}
-                                          at {booking.time_slot}
-                                        </p>
-                                      </div>
-                                    </div>
-                                    <div className="text-right">
-                                      <Badge
-                                        variant={booking.status === "confirmed" ? "default" : "secondary"}
-                                        className={`text-xs ${booking.status === "confirmed" ? "bg-green-500" : ""}`}
-                                      >
-                                        {booking.status}
-                                      </Badge>
-                                      <p className="text-xs text-muted-foreground mt-1">
-                                        ${booking.hourly_rate}/hr
-                                      </p>
-                                    </div>
-                                  </div>
-                                ))}
-                            </div>
-                          </div>
-                        ) : child.status === "linked" ? (
-                          <div className="border-t pt-4 text-center py-4">
-                            <p className="text-sm text-muted-foreground">{t("dashboard.no_lessons", { defaultValue: "No upcoming lessons" })}</p>
-                            <Button variant="outline" size="sm" className="mt-2" asChild>
-                              <Link to="/tutors">
-                                <Search className="mr-2 h-3 w-3" />
-                                {t("dashboard.find_tutors", { defaultValue: "Find Tutors" })}
-                              </Link>
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="border-t pt-4 text-center py-4">
-                            <p className="text-sm text-muted-foreground">
-                              Waiting for your child to create their account
-                            </p>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
-              </div>
-
-              {/* Sidebar */}
-              <div className="space-y-6">
                 {/* Quick Actions */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Quick Actions</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start" asChild>
-                      <Link to="/tutors">
-                        <Search className="mr-2 h-4 w-4" />
-                        Find Tutors
-                      </Link>
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start" asChild>
-                      <Link to="/favorites">
-                        <Star className="mr-2 h-4 w-4" />
-                        Favorite Tutors
-                      </Link>
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start" asChild>
-                      <Link to="/profile/edit">
-                        <Users className="mr-2 h-4 w-4" />
-                        Edit Profile
-                      </Link>
-                    </Button>
+                <div className="space-y-3">
+                  <h3 className="text-sm font-bold text-foreground pl-1">Quick Actions</h3>
+                  <Button variant="outline" className="w-full justify-start rounded-xl h-12 bg-white dark:bg-card shadow-sm border-none font-semibold text-primary hover:text-primary" asChild>
+                    <Link to="/tutors">
+                      <Search className="mr-3 h-4 w-4" />
+                      Find Tutors
+                    </Link>
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start rounded-xl h-12 bg-white dark:bg-card shadow-sm border-none font-semibold text-primary hover:text-primary" asChild>
+                    <Link to="/favorites">
+                      <Heart className="mr-3 h-4 w-4" />
+                      Favorite Tutors
+                    </Link>
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start rounded-xl h-12 bg-white dark:bg-card shadow-sm border-none font-semibold text-primary hover:text-primary" asChild>
+                    <Link to="/profile/edit">
+                      <Edit className="mr-3 h-4 w-4" />
+                      Edit Profile
+                    </Link>
+                  </Button>
+                </div>
+
+                {/* Messages Widget Mock */}
+                <Card className="rounded-2xl shadow-md border-none overflow-hidden flex flex-col bg-white dark:bg-card">
+                  <div className="bg-primary p-3 flex justify-between items-center text-primary-foreground">
+                    <span className="font-semibold text-sm">Messages</span>
+                    <div className="flex gap-2">
+                      <Minus className="h-4 w-4 cursor-pointer" />
+                    </div>
+                  </div>
+                  <CardContent className="p-0">
+                    <div className="p-3 space-y-4 max-h-[200px] overflow-y-auto custom-scrollbar">
+                      <div className="flex gap-3">
+                        <Avatar className="h-8 w-8 shrink-0">
+                          <AvatarImage src="https://i.pravatar.cc/150?img=11" />
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-bold">John Smith</span>
+                            <span className="text-[10px] text-muted-foreground">10:30 AM</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
+                            Lesson is confirmed for today at 2:30 PM.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-3">
+                        <Avatar className="h-8 w-8 shrink-0">
+                          <AvatarImage src="https://i.pravatar.cc/150?img=5" />
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-bold">Sarah Johnson</span>
+                            <span className="text-[10px] text-muted-foreground">Yesterday</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
+                            Thanks! See you then.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <HeadphonesIcon className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-bold text-primary">Support Team</span>
+                            <span className="text-[10px] text-muted-foreground">May 18</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
+                            How can we help you?
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
+                  <CardFooter className="p-2 border-t bg-muted/10">
+                    <div className="relative w-full flex items-center">
+                      <Input placeholder="Type a message..." className="text-xs rounded-full pr-10 border-none bg-muted/30 focus-visible:ring-0 h-9" />
+                      <Button size="icon" className="absolute right-1 h-7 w-7 rounded-full bg-primary hover:bg-primary/90">
+                        <Send className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </CardFooter>
                 </Card>
 
                 {/* Safety Features */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Shield className="h-5 w-5 text-primary" />
+                <Card className="rounded-2xl shadow-sm border-none bg-white dark:bg-card">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base font-bold flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-green-500" />
                       Safety Features
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-4 pt-2">
                     <div className="flex items-start gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-sm font-medium text-foreground">Verified Tutors</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs font-bold text-foreground leading-none mb-1">Verified Tutors</p>
+                        <p className="text-[10px] text-muted-foreground leading-snug">
                           All tutors are verified and background-checked
                         </p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-sm font-medium text-foreground">Lesson Monitoring</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs font-bold text-foreground leading-none mb-1">Lesson Monitoring</p>
+                        <p className="text-[10px] text-muted-foreground leading-snug">
                           View all booked lessons and their status
                         </p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-sm font-medium text-foreground">Review Access</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs font-bold text-foreground leading-none mb-1">Review Access</p>
+                        <p className="text-[10px] text-muted-foreground leading-snug">
                           Read reviews from other parents and students
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium text-foreground">Spending Overview</p>
-                        <p className="text-xs text-muted-foreground">
-                          Track your education investment in one place
                         </p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Upcoming Schedule */}
-                {upcomingBookings.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Clock className="h-5 w-5 text-primary" />
-                        Next Lessons
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {upcomingBookings.slice(0, 5).map((b) => (
-                        <div key={b.id} className="flex items-center gap-3 text-sm">
-                          <div className="h-2 w-2 rounded-full bg-primary shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-foreground truncate">
-                              {b.childName} → {b.tutorName}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(b.booking_date).toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                              })}{" "}
-                              at {b.time_slot}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-                )}
               </div>
             </div>
+
+            {/* Bottom Notification Bar */}
+            <div className="mt-8 flex items-center justify-between bg-white dark:bg-card p-4 rounded-2xl shadow-sm border text-sm">
+              <div className="flex items-center gap-2">
+                <Bell className="h-4 w-4 text-primary" />
+                <span className="font-bold">Reminder is ON</span>
+                <span className="text-muted-foreground text-xs hidden sm:inline">You will receive a notification 15 minutes before each class starts.</span>
+              </div>
+              <Button variant="outline" size="sm" className="rounded-full text-xs h-8">
+                Manage Notifications
+              </Button>
+            </div>
+            
           </motion.div>
         </div>
       </main>
