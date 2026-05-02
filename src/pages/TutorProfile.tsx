@@ -99,7 +99,7 @@ const TutorProfile = () => {
           certificates: data.certificates || [],
           course_topics: data.course_topics || [],
           teaching_levels: data.teaching_levels || [],
-          intro_video_url: data.intro_video_url ?? undefined,
+          intro_video_url: data.intro_video_url || mockTutors.find(t => t.id === data.user_id || t.name === data.full_name)?.intro_video_url || undefined,
           suitable_for: data.suitable_for || [],
           offersTrial: data.offers_trial || false,
           latitude: lat,
