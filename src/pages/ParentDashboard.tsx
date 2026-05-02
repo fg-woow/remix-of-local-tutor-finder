@@ -35,6 +35,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogHeader, DialogDescription } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -351,9 +352,30 @@ const ParentDashboard = () => {
               
               <div className="flex items-center gap-4 bg-white dark:bg-card p-4 pr-6 rounded-3xl shadow-sm border">
                 <CircularProgress value={45} max={100} size={110} strokeWidth={5} />
-                <Button size="icon" className="rounded-full h-10 w-10 shrink-0 shadow-md bg-teal-500 hover:bg-teal-600">
-                  <Plus className="h-5 w-5" />
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button size="icon" className="rounded-full h-10 w-10 shrink-0 shadow-md bg-teal-500 hover:bg-teal-600">
+                      <Plus className="h-5 w-5" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Add Funds to Wallet</DialogTitle>
+                      <DialogDescription>Top up your balance to book more lessons.</DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-3 gap-2">
+                        <Button variant="outline">$20</Button>
+                        <Button variant="outline">$50</Button>
+                        <Button variant="outline">$100</Button>
+                      </div>
+                      <div className="flex gap-2 items-center">
+                        <Input type="number" placeholder="Custom Amount" className="flex-1" />
+                        <Button className="w-[100px]">Add</Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
 
@@ -369,9 +391,12 @@ const ParentDashboard = () => {
                   <div>
                     <p className="text-2xl font-bold text-foreground">{children.length || 2}</p>
                     <p className="text-sm font-medium text-muted-foreground mb-4">Children Linked</p>
-                    <Link to="#" className="text-xs font-semibold text-primary flex items-center hover:underline">
+                    <button 
+                      onClick={() => document.getElementById('my-children-section')?.scrollIntoView({ behavior: 'smooth' })} 
+                      className="text-xs font-semibold text-primary flex items-center hover:underline cursor-pointer"
+                    >
                       View Children <ChevronRight className="h-3 w-3 ml-1" />
-                    </Link>
+                    </button>
                   </div>
                 </CardContent>
               </Card>
@@ -386,9 +411,12 @@ const ParentDashboard = () => {
                   <div>
                     <p className="text-2xl font-bold text-foreground">{upcomingBookings.length || 3}</p>
                     <p className="text-sm font-medium text-muted-foreground mb-4">Upcoming Lessons</p>
-                    <Link to="#" className="text-xs font-semibold text-primary flex items-center hover:underline">
+                    <button 
+                      onClick={() => document.getElementById('upcoming-schedule-section')?.scrollIntoView({ behavior: 'smooth' })} 
+                      className="text-xs font-semibold text-primary flex items-center hover:underline cursor-pointer"
+                    >
                       View Calendar <ChevronRight className="h-3 w-3 ml-1" />
-                    </Link>
+                    </button>
                   </div>
                 </CardContent>
               </Card>
@@ -403,9 +431,28 @@ const ParentDashboard = () => {
                   <div>
                     <p className="text-2xl font-bold text-foreground">${totalSpent || 120}.00</p>
                     <p className="text-sm font-medium text-muted-foreground mb-4">Total Invested</p>
-                    <Link to="#" className="text-xs font-semibold text-primary flex items-center hover:underline">
-                      View Transactions <ChevronRight className="h-3 w-3 ml-1" />
-                    </Link>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button className="text-xs font-semibold text-primary flex items-center hover:underline cursor-pointer">
+                          View Transactions <ChevronRight className="h-3 w-3 ml-1" />
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Recent Transactions</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 pt-4">
+                          <div className="flex justify-between items-center text-sm border-b pb-2">
+                            <div><p className="font-semibold">Lesson Payment</p><p className="text-xs text-muted-foreground">Math with John Smith</p></div>
+                            <span className="font-bold text-red-500">-$45.00</span>
+                          </div>
+                          <div className="flex justify-between items-center text-sm border-b pb-2">
+                            <div><p className="font-semibold">Wallet Top-up</p><p className="text-xs text-muted-foreground">Credit Card ending in 4242</p></div>
+                            <span className="font-bold text-green-500">+$100.00</span>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </CardContent>
               </Card>
@@ -420,9 +467,23 @@ const ParentDashboard = () => {
                   <div>
                     <p className="text-2xl font-bold text-foreground">100%</p>
                     <p className="text-sm font-medium text-muted-foreground mb-4">Verified Tutors</p>
-                    <Link to="#" className="text-xs font-semibold text-primary flex items-center hover:underline">
-                      Learn More <ChevronRight className="h-3 w-3 ml-1" />
-                    </Link>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button className="text-xs font-semibold text-primary flex items-center hover:underline cursor-pointer">
+                          Learn More <ChevronRight className="h-3 w-3 ml-1" />
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Tutor Verification Process</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-3 text-sm text-muted-foreground pt-4">
+                          <p><strong>1. Identity Check:</strong> We verify the government-issued ID of all tutors.</p>
+                          <p><strong>2. Background Check:</strong> Comprehensive criminal background checks are performed annually.</p>
+                          <p><strong>3. Interview & Qualifications:</strong> Our team reviews their educational background, certificates, and conducts a live interview to ensure teaching quality.</p>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </CardContent>
               </Card>
@@ -435,7 +496,7 @@ const ParentDashboard = () => {
               <div className="lg:col-span-2 space-y-6">
                 
                 {/* Upcoming Schedule Row */}
-                <div className="grid md:grid-cols-2 gap-6">
+                <div id="upcoming-schedule-section" className="grid md:grid-cols-2 gap-6 scroll-mt-24">
                   {/* Calendar Widget */}
                   <Card className="rounded-2xl shadow-sm border-none bg-white dark:bg-card flex flex-col">
                     <CardHeader className="pb-2 flex flex-row items-center justify-between">
@@ -465,45 +526,31 @@ const ParentDashboard = () => {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground font-medium">Today, May 20 • 2:30 PM</p>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-bold text-foreground text-sm">Math</h4>
-                            <p className="text-xs text-muted-foreground">with John Smith</p>
+                      {upcomingBookings.length > 0 ? (
+                        upcomingBookings.slice(0, 3).map((b, i) => (
+                          <div key={b.id} className={`space-y-1 ${i > 0 ? 'pt-3 border-t border-dashed' : ''}`}>
+                            <p className="text-xs text-muted-foreground font-medium">
+                              {new Date(b.booking_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} • {b.time_slot}
+                            </p>
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="font-bold text-foreground text-sm">{b.childName}</h4>
+                                <p className="text-xs text-muted-foreground">with {b.tutorName}</p>
+                              </div>
+                              <Badge variant="outline" className="text-[10px] text-green-600 bg-green-50 border-green-200">Online</Badge>
+                            </div>
                           </div>
-                          <Badge variant="outline" className="text-[10px] text-green-600 bg-green-50 border-green-200">Online</Badge>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1 pt-3 border-t border-dashed">
-                        <p className="text-xs text-muted-foreground font-medium">Thu, May 22 • 4:00 PM</p>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-bold text-foreground text-sm">English</h4>
-                            <p className="text-xs text-muted-foreground">with Sarah Johnson</p>
-                          </div>
-                          <Badge variant="outline" className="text-[10px] text-green-600 bg-green-50 border-green-200">Online</Badge>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1 pt-3 border-t border-dashed">
-                        <p className="text-xs text-muted-foreground font-medium">Sat, May 24 • 11:00 AM</p>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-bold text-foreground text-sm">Science</h4>
-                            <p className="text-xs text-muted-foreground">with Michael Brown</p>
-                          </div>
-                          <Badge variant="outline" className="text-[10px] text-blue-600 bg-blue-50 border-blue-200">In-Person</Badge>
-                        </div>
-                      </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground py-4 text-center">No upcoming lessons.</p>
+                      )}
 
                     </CardContent>
                   </Card>
                 </div>
 
                 {/* My Children Row */}
-                <div className="space-y-4">
+                <div id="my-children-section" className="space-y-4 scroll-mt-24">
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-bold text-foreground">My Children</h3>
                     <Link to="#" className="text-xs font-semibold text-primary hover:underline">Manage Children</Link>
@@ -545,9 +592,28 @@ const ParentDashboard = () => {
                           </div>
                         </div>
                         
-                        <Button variant="outline" className="w-full mt-4 h-8 text-xs rounded-lg text-primary border-primary/20 hover:bg-primary/5">
-                          View Profile
-                        </Button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" className="w-full mt-4 h-8 text-xs rounded-lg text-primary border-primary/20 hover:bg-primary/5 cursor-pointer">
+                              View Profile
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Alex Miller's Profile</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                              <div className="flex items-center gap-4">
+                                <Avatar className="h-16 w-16"><AvatarImage src="https://i.pravatar.cc/150?img=12" /></Avatar>
+                                <div><h3 className="text-lg font-bold">Alex Miller</h3><p className="text-sm text-muted-foreground">Age 9 • Grade 4</p></div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="p-3 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Enrolled Subjects</p><p className="font-semibold text-sm">Math, Science</p></div>
+                                <div className="p-3 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Total Lessons</p><p className="font-semibold text-sm">24</p></div>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </CardContent>
                     </Card>
 
@@ -586,9 +652,28 @@ const ParentDashboard = () => {
                           </div>
                         </div>
                         
-                        <Button variant="outline" className="w-full mt-4 h-8 text-xs rounded-lg text-primary border-primary/20 hover:bg-primary/5">
-                          View Profile
-                        </Button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" className="w-full mt-4 h-8 text-xs rounded-lg text-primary border-primary/20 hover:bg-primary/5 cursor-pointer">
+                              View Profile
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Emma Miller's Profile</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                              <div className="flex items-center gap-4">
+                                <Avatar className="h-16 w-16"><AvatarImage src="https://i.pravatar.cc/150?img=5" /></Avatar>
+                                <div><h3 className="text-lg font-bold">Emma Miller</h3><p className="text-sm text-muted-foreground">Age 7 • Grade 2</p></div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="p-3 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Enrolled Subjects</p><p className="font-semibold text-sm">English, Arts</p></div>
+                                <div className="p-3 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Total Lessons</p><p className="font-semibold text-sm">18</p></div>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </CardContent>
                     </Card>
 
@@ -611,7 +696,27 @@ const ParentDashboard = () => {
                 <Card className="rounded-2xl shadow-sm border-none bg-white dark:bg-card">
                   <CardHeader className="pb-2 flex flex-row items-center justify-between">
                     <CardTitle className="text-base font-bold">Learning Progress</CardTitle>
-                    <Link to="#" className="text-xs font-semibold text-primary">View Report</Link>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button className="text-xs font-semibold text-primary hover:underline cursor-pointer">View Report</button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Learning Progress Report</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <p className="text-sm text-muted-foreground">Detailed report for this month:</p>
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center"><span className="text-sm font-semibold">Math</span><span className="text-sm text-green-500">+12%</span></div>
+                            <Progress value={40} className="h-2" />
+                            <div className="flex justify-between items-center mt-4"><span className="text-sm font-semibold">English</span><span className="text-sm text-green-500">+5%</span></div>
+                            <Progress value={70} className="h-2" />
+                            <div className="flex justify-between items-center mt-4"><span className="text-sm font-semibold">Science</span><span className="text-sm text-amber-500">-2%</span></div>
+                            <Progress value={60} className="h-2" />
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </CardHeader>
                   <CardContent className="space-y-5">
                     <div>
