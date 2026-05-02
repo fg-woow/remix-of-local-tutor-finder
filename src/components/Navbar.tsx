@@ -28,8 +28,10 @@ const Navbar = () => {
   const { theme, setTheme } = useTheme();
   const { t, i18n } = useTranslation();
 
-  const toggleLanguage = () => {
-    i18n.changeLanguage(i18n.language === 'en' ? 'tr' : 'en');
+  const handleLanguageChange = (lang: string) => {
+    const currentPath = window.location.pathname;
+    const pathWithoutLang = currentPath.replace(/^\/(en|tr|it|sp)/, '') || '/';
+    window.location.href = `/${lang}${pathWithoutLang === '/' ? '' : pathWithoutLang}${window.location.search}`;
   };
 
   const getInitials = (name: string) => {
@@ -48,7 +50,7 @@ const Navbar = () => {
         onClick={onClick}
         className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
-        {t("tutors")}
+        {t("nav.tutors", { defaultValue: "Find Tutors" })}
       </Link>
       <Link
         to="/map"
@@ -104,21 +106,30 @@ const Navbar = () => {
 
         <div className="flex items-center gap-2">
           {/* Toggles for Theme and Language */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleLanguage}
-            title={t("language")}
-            className="hidden md:flex"
-          >
-            <Globe className="h-[1.2rem] w-[1.2rem]" />
-            <span className="sr-only">Toggle language</span>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Language"
+                className="hidden md:flex"
+              >
+                <Globe className="h-[1.2rem] w-[1.2rem]" />
+                <span className="sr-only">Toggle language</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleLanguageChange('en')}>English (EN)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleLanguageChange('tr')}>Türkçe (TR)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleLanguageChange('it')}>Italiano (IT)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleLanguageChange('sp')}>Español (SP)</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            title={t("dark_mode")}
+            title="Toggle Theme"
             className="hidden md:flex"
           >
             <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -212,10 +223,10 @@ const Navbar = () => {
           ) : (
             <>
               <Button variant="ghost" size="sm" asChild className="hidden md:inline-flex">
-                <Link to="/login">{t("login")}</Link>
+                <Link to="/login">{t("nav.login", { defaultValue: "Login" })}</Link>
               </Button>
               <Button size="sm" asChild className="hidden md:inline-flex">
-                <Link to="/signup">{t("signup")}</Link>
+                <Link to="/signup">{t("nav.signup", { defaultValue: "Sign Up" })}</Link>
               </Button>
             </>
           )}
@@ -238,19 +249,28 @@ const Navbar = () => {
               </SheetHeader>
               <nav className="mt-8 flex flex-col gap-4">
                 <div className="flex items-center gap-4 mb-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={toggleLanguage}
-                    title={t("language")}
-                  >
-                    <Globe className="h-[1.2rem] w-[1.2rem]" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        title="Language"
+                      >
+                        <Globe className="h-[1.2rem] w-[1.2rem]" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem onClick={() => handleLanguageChange('en')}>English (EN)</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleLanguageChange('tr')}>Türkçe (TR)</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleLanguageChange('it')}>Italiano (IT)</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleLanguageChange('sp')}>Español (SP)</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button
                     variant="outline"
                     size="icon"
                     onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    title={t("dark_mode")}
+                    title="Toggle Theme"
                   >
                     {theme === "dark" ? <Sun className="h-[1.2rem] w-[1.2rem]" /> : <Moon className="h-[1.2rem] w-[1.2rem]" />}
                   </Button>

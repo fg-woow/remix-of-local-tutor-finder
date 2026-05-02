@@ -79,7 +79,7 @@ const resources = {
       }
     }
   },
-  es: {
+  sp: {
     translation: {
       "nav": {
         "home": "Inicio",

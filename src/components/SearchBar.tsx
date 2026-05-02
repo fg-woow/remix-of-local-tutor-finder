@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { subjects, locations } from "@/data/tutors";
+import { useTranslation } from "react-i18next";
 
 const SearchBar = () => {
+  const { t } = useTranslation();
   const [subject, setSubject] = useState("");
   const [location, setLocation] = useState("");
   const [showSubjectSuggestions, setShowSubjectSuggestions] = useState(false);
@@ -37,7 +39,7 @@ const SearchBar = () => {
           </div>
           <Input
             type="text"
-            placeholder="What do you want to learn?"
+            placeholder={t("hero.search_placeholder", { defaultValue: "What do you want to learn?" })}
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             onFocus={() => setShowSubjectSuggestions(true)}
@@ -93,7 +95,7 @@ const SearchBar = () => {
         {/* Search Button */}
         <Button variant="hero" size="lg" onClick={handleSearch} className="sm:w-auto">
           <Search className="h-4 w-4" />
-          <span>Search</span>
+          <span>{t("hero.search_button", { defaultValue: "Search" })}</span>
         </Button>
       </div>
     </div>

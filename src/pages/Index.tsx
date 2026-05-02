@@ -5,11 +5,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
 import TutorCard from "@/components/TutorCard";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { mockTutors } from "@/data/tutors";
 import heroImage from "@/assets/hero-illustration.jpg";
 
 const Index = () => {
+  const { t } = useTranslation();
   const featuredTutors = mockTutors.slice(0, 3);
 
   const fadeInUp = {
@@ -45,12 +47,10 @@ const Index = () => {
                   Face-to-face learning made easy
                 </span>
                 <h1 className="mb-6 text-4xl font-bold leading-tight text-foreground md:text-5xl lg:text-6xl">
-                  Find the perfect{" "}
-                  <span className="text-primary">tutor near you</span>
+                  {t("hero.title")}
                 </h1>
                 <p className="mb-8 text-lg text-muted-foreground md:text-xl">
-                  Connect with qualified local tutors in minutes. Whether it's math, 
-                  science, languages, or arts — your ideal teacher is just around the corner.
+                  {t("hero.subtitle")}
                 </p>
 
                 <SearchBar />
@@ -58,15 +58,15 @@ const Index = () => {
                 <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground lg:justify-start">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-primary" />
-                    <span>Verified tutors</span>
+                    <span>{t("features.verified")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-primary" />
-                    <span>Local & in-person</span>
+                    <span>{t("features.local")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-primary" />
-                    <span>Free to browse</span>
+                    <span>{t("features.flexible")}</span>
                   </div>
                 </div>
               </motion.div>
