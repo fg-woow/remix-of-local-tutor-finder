@@ -557,125 +557,78 @@ const ParentDashboard = () => {
                   </div>
                   
                   <div className="grid sm:grid-cols-3 gap-4">
-                    {/* Child 1 */}
-                    <Card className="rounded-2xl shadow-sm border-none bg-white dark:bg-card">
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10 border border-muted">
-                              <AvatarImage src="https://i.pravatar.cc/150?img=12" />
-                              <AvatarFallback>AM</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <h4 className="font-bold text-sm">Alex Miller</h4>
-                              <p className="text-xs text-muted-foreground">Age 9</p>
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="icon" className="h-6 w-6"><MoreVertical className="h-4 w-4" /></Button>
-                        </div>
-                        
-                        <div className="space-y-3">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Next Lesson</span>
-                            <span className="font-medium">Today, 2:30 PM (Math)</span>
-                          </div>
-                          <div>
-                            <div className="flex justify-between text-xs mb-1">
-                              <span className="text-muted-foreground">Progress</span>
-                              <span className="font-medium text-primary">40%</span>
-                            </div>
-                            <Progress value={40} className="h-1.5" />
-                          </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Last Activity</span>
-                            <span className="font-medium">May 19, 2026</span>
-                          </div>
-                        </div>
-                        
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" className="w-full mt-4 h-8 text-xs rounded-lg text-primary border-primary/20 hover:bg-primary/5 cursor-pointer">
-                              View Profile
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Alex Miller's Profile</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                              <div className="flex items-center gap-4">
-                                <Avatar className="h-16 w-16"><AvatarImage src="https://i.pravatar.cc/150?img=12" /></Avatar>
-                                <div><h3 className="text-lg font-bold">Alex Miller</h3><p className="text-sm text-muted-foreground">Age 9 • Grade 4</p></div>
+                    {children.map((child, idx) => {
+                      const nextBooking = child.bookings
+                        .filter(b => b.status === "confirmed" && new Date(b.booking_date) >= new Date())
+                        .sort((a, b) => new Date(a.booking_date).getTime() - new Date(b.booking_date).getTime())[0];
+                      
+                      const progressValue = Math.floor(Math.random() * 60) + 40; // Mock progress for now
+                      const avatarUrl = child.profile?.avatar_url || `https://i.pravatar.cc/150?img=${idx + 10}`;
+                      const childName = child.profile?.full_name || child.email.split('@')[0];
+                      
+                      return (
+                        <Card key={child.linkId} className="rounded-2xl shadow-sm border-none bg-white dark:bg-card">
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start mb-4">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-10 w-10 border border-muted">
+                                  <AvatarImage src={avatarUrl} />
+                                  <AvatarFallback>{childName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <h4 className="font-bold text-sm truncate max-w-[100px]" title={childName}>{childName}</h4>
+                                  <p className="text-xs text-muted-foreground">{child.status === 'linked' ? 'Active' : 'Pending'}</p>
+                                </div>
                               </div>
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="p-3 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Enrolled Subjects</p><p className="font-semibold text-sm">Math, Science</p></div>
-                                <div className="p-3 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Total Lessons</p><p className="font-semibold text-sm">24</p></div>
+                              <Button variant="ghost" size="icon" className="h-6 w-6"><MoreVertical className="h-4 w-4" /></Button>
+                            </div>
+                            
+                            <div className="space-y-3">
+                              <div className="flex justify-between text-xs">
+                                <span className="text-muted-foreground">Next Lesson</span>
+                                <span className="font-medium truncate max-w-[120px]" title={nextBooking ? `${new Date(nextBooking.booking_date).toLocaleDateString()} ${nextBooking.time_slot}` : 'No upcoming'}>
+                                  {nextBooking ? `${new Date(nextBooking.booking_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}, ${nextBooking.time_slot}` : 'None'}
+                                </span>
+                              </div>
+                              <div>
+                                <div className="flex justify-between text-xs mb-1">
+                                  <span className="text-muted-foreground">Progress</span>
+                                  <span className="font-medium text-primary">{progressValue}%</span>
+                                </div>
+                                <Progress value={progressValue} className="h-1.5" />
+                              </div>
+                              <div className="flex justify-between text-xs">
+                                <span className="text-muted-foreground">Last Activity</span>
+                                <span className="font-medium">Recently</span>
                               </div>
                             </div>
-                          </DialogContent>
-                        </Dialog>
-                      </CardContent>
-                    </Card>
-
-                    {/* Child 2 */}
-                    <Card className="rounded-2xl shadow-sm border-none bg-white dark:bg-card">
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10 border border-muted">
-                              <AvatarImage src="https://i.pravatar.cc/150?img=5" />
-                              <AvatarFallback>EM</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <h4 className="font-bold text-sm">Emma Miller</h4>
-                              <p className="text-xs text-muted-foreground">Age 7</p>
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="icon" className="h-6 w-6"><MoreVertical className="h-4 w-4" /></Button>
-                        </div>
-                        
-                        <div className="space-y-3">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Next Lesson</span>
-                            <span className="font-medium">Thu, 4:00 PM (English)</span>
-                          </div>
-                          <div>
-                            <div className="flex justify-between text-xs mb-1">
-                              <span className="text-muted-foreground">Progress</span>
-                              <span className="font-medium text-purple-600">70%</span>
-                            </div>
-                            <Progress value={70} className="h-1.5 bg-purple-100 dark:bg-purple-900/30 indicator-purple-500" />
-                          </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Last Activity</span>
-                            <span className="font-medium">May 18, 2026</span>
-                          </div>
-                        </div>
-                        
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" className="w-full mt-4 h-8 text-xs rounded-lg text-primary border-primary/20 hover:bg-primary/5 cursor-pointer">
-                              View Profile
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Emma Miller's Profile</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                              <div className="flex items-center gap-4">
-                                <Avatar className="h-16 w-16"><AvatarImage src="https://i.pravatar.cc/150?img=5" /></Avatar>
-                                <div><h3 className="text-lg font-bold">Emma Miller</h3><p className="text-sm text-muted-foreground">Age 7 • Grade 2</p></div>
-                              </div>
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="p-3 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Enrolled Subjects</p><p className="font-semibold text-sm">English, Arts</p></div>
-                                <div className="p-3 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Total Lessons</p><p className="font-semibold text-sm">18</p></div>
-                              </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </CardContent>
-                    </Card>
+                            
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" className="w-full mt-4 h-8 text-xs rounded-lg text-primary border-primary/20 hover:bg-primary/5 cursor-pointer">
+                                  View Profile
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>{childName}'s Profile</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4 py-4">
+                                  <div className="flex items-center gap-4">
+                                    <Avatar className="h-16 w-16"><AvatarImage src={avatarUrl} /></Avatar>
+                                    <div><h3 className="text-lg font-bold">{childName}</h3><p className="text-sm text-muted-foreground">{child.email}</p></div>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-3 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Status</p><p className="font-semibold text-sm capitalize">{child.status}</p></div>
+                                    <div className="p-3 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Total Lessons</p><p className="font-semibold text-sm">{child.bookings.length}</p></div>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
 
                     {/* Add Child */}
                     <Card className="rounded-2xl shadow-none border-2 border-dashed bg-transparent hover:bg-muted/30 transition-colors flex flex-col items-center justify-center p-6 text-center cursor-pointer">
