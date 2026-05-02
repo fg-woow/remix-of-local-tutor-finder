@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 
 const signupSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
@@ -40,6 +41,7 @@ const getPasswordStrength = (password: string): { score: number; label: string; 
 };
 
 const Signup = () => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -146,9 +148,9 @@ const Signup = () => {
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Create an account</CardTitle>
+            <CardTitle className="text-2xl">{t("signup.title", { defaultValue: "Create an account" })}</CardTitle>
             <CardDescription>
-              Join Learnnear to find or become a tutor
+              {t("signup.subtitle", { defaultValue: "Join Learnnear to find or become a tutor" })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -170,7 +172,7 @@ const Signup = () => {
                   >
                     <GraduationCap className={`h-6 w-6 ${formData.role === "student" ? "text-primary" : "text-muted-foreground"}`} />
                     <span className={`text-sm font-medium ${formData.role === "student" ? "text-primary" : "text-foreground"}`}>
-                      Find a tutor
+                      {t("signup.student_desc", { defaultValue: "Find a tutor" })}
                     </span>
                   </button>
                   <button
@@ -184,7 +186,7 @@ const Signup = () => {
                   >
                     <Users className={`h-6 w-6 ${formData.role === "tutor" ? "text-primary" : "text-muted-foreground"}`} />
                     <span className={`text-sm font-medium ${formData.role === "tutor" ? "text-primary" : "text-foreground"}`}>
-                      Become a tutor
+                      {t("signup.tutor_desc", { defaultValue: "Become a tutor" })}
                     </span>
                   </button>
                   <button
@@ -198,7 +200,7 @@ const Signup = () => {
                   >
                     <Heart className={`h-6 w-6 ${formData.role === "parent" ? "text-primary" : "text-muted-foreground"}`} />
                     <span className={`text-sm font-medium ${formData.role === "parent" ? "text-primary" : "text-foreground"}`}>
-                      I'm a parent
+                      {t("signup.parent_role", { defaultValue: "I'm a parent" })}
                     </span>
                   </button>
                 </div>
@@ -206,7 +208,7 @@ const Signup = () => {
 
               <div>
                 <label htmlFor="name" className="mb-2 block text-sm font-medium text-foreground">
-                  Full Name
+                  {t("signup.full_name", { defaultValue: "Full Name" })}
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -227,7 +229,7 @@ const Signup = () => {
 
               <div>
                 <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
-                  Email
+                  {t("signup.email", { defaultValue: "Email" })}
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -249,7 +251,7 @@ const Signup = () => {
 
               <div>
                 <label htmlFor="password" className="mb-2 block text-sm font-medium text-foreground">
-                  Password
+                  {t("signup.password", { defaultValue: "Password" })}
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -355,14 +357,14 @@ const Signup = () => {
               </div>
 
               <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating account..." : "Sign up"}
+                {isLoading ? "Creating account..." : t("signup.create_account", { defaultValue: "Sign up" })}
               </Button>
             </form>
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
+              {t("signup.already_have_account", { defaultValue: "Already have an account?" })}{" "}
               <Link to="/login" className="font-medium text-primary hover:underline">
-                Log in
+                {t("signup.login", { defaultValue: "Log in" })}
               </Link>
             </p>
           </CardContent>

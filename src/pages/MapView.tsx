@@ -14,6 +14,7 @@ import { getTutorProfiles } from "@/lib/api";
 import type { Profile } from "@/lib/api";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { calculateDistanceKm, getFallbackCoordinates, CITY_COORDINATES } from "@/lib/geolocation";
+import { useTranslation } from "react-i18next";
 
 // Fix default Leaflet marker icons
 const tutorIcon = L.icon({
@@ -54,6 +55,7 @@ interface MapTutor {
 }
 
 const MapView = () => {
+  const { t } = useTranslation();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const [tutors, setTutors] = useState<MapTutor[]>([]);
@@ -208,10 +210,10 @@ const MapView = () => {
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/tutors">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to list
+                  {t("featured.view_all", { defaultValue: "Back to list" })}
                 </Link>
               </Button>
-              <h1 className="text-xl font-bold">Tutor Map</h1>
+              <h1 className="text-xl font-bold">{t("map.title", { defaultValue: "Map View" })}</h1>
               <Badge variant="outline" className="gap-1">
                 <MapPin className="h-3 w-3" />
                 {tutors.length} tutors

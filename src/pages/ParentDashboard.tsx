@@ -35,6 +35,7 @@ import {
   getChildBookings,
   getProfileByUserId,
 } from "@/lib/api";
+import { useTranslation } from "react-i18next";
 
 interface ChildInfo {
   linkId: string;
@@ -58,6 +59,7 @@ interface ChildInfo {
 }
 
 const ParentDashboard = () => {
+  const { t } = useTranslation();
   const { user, profile, role, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -209,7 +211,7 @@ const ParentDashboard = () => {
             {/* Header */}
             <div className="mb-8">
               <div className="flex flex-wrap items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-foreground">Parent Dashboard</h1>
+                <h1 className="text-3xl font-bold text-foreground">{t("dashboard.title", { defaultValue: "Parent Dashboard" })}</h1>
                 <Badge variant="default" className="gap-1 bg-pink-500 hover:bg-pink-600">
                   <Shield className="h-3 w-3" />
                   Parent Account
@@ -243,7 +245,7 @@ const ParentDashboard = () => {
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-foreground">{upcomingBookings.length}</p>
-                      <p className="text-xs text-muted-foreground">Upcoming Lessons</p>
+                      <p className="text-xs text-muted-foreground">{t("dashboard.upcoming_lessons", { defaultValue: "Upcoming Lessons" })}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -432,11 +434,11 @@ const ParentDashboard = () => {
                           </div>
                         ) : child.status === "linked" ? (
                           <div className="border-t pt-4 text-center py-4">
-                            <p className="text-sm text-muted-foreground">No upcoming lessons</p>
+                            <p className="text-sm text-muted-foreground">{t("dashboard.no_lessons", { defaultValue: "No upcoming lessons" })}</p>
                             <Button variant="outline" size="sm" className="mt-2" asChild>
                               <Link to="/tutors">
                                 <Search className="mr-2 h-3 w-3" />
-                                Find a Tutor
+                                {t("dashboard.find_tutors", { defaultValue: "Find Tutors" })}
                               </Link>
                             </Button>
                           </div>
