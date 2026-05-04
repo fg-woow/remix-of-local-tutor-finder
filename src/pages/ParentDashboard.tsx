@@ -470,29 +470,20 @@ const ParentDashboard = () => {
                 <CardContent className="p-5">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-50 dark:bg-purple-900/20 text-purple-500">
-                      <Shield className="h-5 w-5" />
+                      <Star className="h-5 w-5" />
                     </div>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-foreground">100%</p>
-                    <p className="text-sm font-medium text-muted-foreground mb-4">Verified Tutors</p>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <button className="text-xs font-semibold text-primary flex items-center hover:underline cursor-pointer">
-                          Learn More <ChevronRight className="h-3 w-3 ml-1" />
-                        </button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Tutor Verification Process</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-3 text-sm text-muted-foreground pt-4">
-                          <p><strong>1. Identity Check:</strong> We verify the government-issued ID of all tutors.</p>
-                          <p><strong>2. Background Check:</strong> Comprehensive criminal background checks are performed annually.</p>
-                          <p><strong>3. Interview & Qualifications:</strong> Our team reviews their educational background, certificates, and conducts a live interview to ensure teaching quality.</p>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                    <p className="text-2xl font-bold text-foreground">
+                      {children.reduce((acc, c) => acc + c.bookings.filter(b => b.tutor_notes || b.performance_rating).length, 0)}
+                    </p>
+                    <p className="text-sm font-medium text-muted-foreground mb-4">Lesson Feedbacks</p>
+                    <button 
+                      onClick={() => setIsHistoryDialogOpen(true)} 
+                      className="text-xs font-semibold text-primary flex items-center hover:underline cursor-pointer"
+                    >
+                      View All Feedback <ChevronRight className="h-3 w-3 ml-1" />
+                    </button>
                   </div>
                 </CardContent>
               </Card>

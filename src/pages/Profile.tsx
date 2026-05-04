@@ -62,16 +62,20 @@ const StudentProfile = ({ profile }: { profile: UserProfile }) => {
         const allFeedbacks: any[] = [];
         for (const child of children) {
           if (child.child_id) {
-            const { data: bookings } = await getChildBookings(child.child_id);
+            const [{ data: bookings }, { data: childProf }] = await Promise.all([
+              getChildBookings(child.child_id),
+              getChildProfile(child.child_id)
+            ]);
+            
             const pastBookings = bookings.filter((b: any) => 
-              (b.status === "completed" || b.performance_rating || b.tutor_notes)
+              (b.status === "completed" || b.performance_rating !== null || b.tutor_notes)
             );
             
             for (const booking of pastBookings) {
               const { data: tutorProf } = await getProfileByUserId(booking.tutor_id);
               allFeedbacks.push({
                 ...booking,
-                childName: child.profile?.full_name || child.child_email,
+                childName: childProf?.full_name || child.child_email,
                 tutorName: tutorProf?.full_name || "Unknown Tutor"
               });
             }
