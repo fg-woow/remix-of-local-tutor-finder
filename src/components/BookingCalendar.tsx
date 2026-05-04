@@ -411,6 +411,37 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
                                         </div>
                                     )}
 
+                                    {/* Recurring Option */}
+                                    <div className="flex items-center justify-between gap-2 rounded-lg border p-3 bg-primary/5 border-primary/20">
+                                        <div className="space-y-0.5">
+                                            <div className="flex items-center gap-2">
+                                                <label htmlFor="isRecurring" className="text-sm font-bold text-primary">RECURRING WEEKLY</label>
+                                                <Badge variant="outline" className="border-primary/20 bg-primary/10 text-primary text-[10px]">SAVE 10%</Badge>
+                                            </div>
+                                            <p className="text-[10px] text-muted-foreground italic">Repeat this lesson every {format(date!, "EEEE")}</p>
+                                        </div>
+                                        <Switch id="isRecurring" checked={isRecurring} onCheckedChange={setIsRecurring} />
+                                    </div>
+
+                                    {isRecurring && (
+                                        <div className="p-3 rounded-xl space-y-3 border bg-muted/30 border-dashed animate-in fade-in zoom-in-95">
+                                            <Label className="text-[10px] font-bold text-muted-foreground uppercase">Number of Weeks</Label>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {[4, 8, 12].map((weeks) => (
+                                                    <Button
+                                                        key={weeks}
+                                                        type="button"
+                                                        variant={recurrenceWeeks === weeks ? "default" : "outline"}
+                                                        className="h-7 text-[10px] rounded-lg"
+                                                        onClick={() => setRecurrenceWeeks(weeks)}
+                                                    >
+                                                        {weeks} Weeks
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {/* Duration */}
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-medium text-muted-foreground">Session Duration</label>
@@ -475,37 +506,6 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
                                 </div>
                             ) : (
                                 <>
-                                    {/* Recurring Option */}
-                                    <div className="flex items-center justify-between gap-2 rounded-lg border p-4 bg-primary/5 border-primary/20">
-                                        <div className="space-y-0.5">
-                                            <div className="flex items-center gap-2">
-                                                <label htmlFor="isRecurring" className="text-sm font-bold text-primary">RECURRING WEEKLY</label>
-                                                <Badge variant="outline" className="border-primary/20 bg-primary/10 text-primary text-[10px]">SAVE 10%</Badge>
-                                            </div>
-                                            <p className="text-[10px] text-muted-foreground italic">Repeat this lesson every {format(date!, "EEEE")}</p>
-                                        </div>
-                                        <Switch id="isRecurring" checked={isRecurring} onCheckedChange={setIsRecurring} />
-                                    </div>
-
-                                    {isRecurring && (
-                                        <div className="p-3 rounded-xl space-y-3 border bg-muted/30 border-dashed animate-in fade-in zoom-in-95">
-                                            <Label className="text-xs font-bold text-muted-foreground uppercase">Number of Weeks</Label>
-                                            <div className="grid grid-cols-3 gap-2">
-                                                {[4, 8, 12].map((weeks) => (
-                                                    <Button
-                                                        key={weeks}
-                                                        type="button"
-                                                        variant={recurrenceWeeks === weeks ? "default" : "outline"}
-                                                        className="h-8 text-xs rounded-lg"
-                                                        onClick={() => setRecurrenceWeeks(weeks)}
-                                                    >
-                                                        {weeks} Weeks
-                                                    </Button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
                                     {/* Gift Option */}
                                     <div className="flex items-center gap-2 rounded-lg border p-3 bg-muted/20">
                                         <input type="checkbox" id="isGift" checked={isGift} onChange={(e) => setIsGift(e.target.checked)} className="rounded border-gray-300" />
