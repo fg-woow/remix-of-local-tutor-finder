@@ -606,21 +606,143 @@ const ParentDashboard = () => {
                             <Dialog>
                               <DialogTrigger asChild>
                                 <Button variant="outline" className="w-full mt-4 h-8 text-xs rounded-lg text-primary border-primary/20 hover:bg-primary/5 cursor-pointer">
-                                  View Profile
+                                  View Profile & Feedback
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent>
+                              <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
                                 <DialogHeader>
-                                  <DialogTitle>{childName}'s Profile</DialogTitle>
+                                  <DialogTitle>{childName}'s Learning Profile</DialogTitle>
+                                  <DialogDescription>View sessions, tutor feedback, and learning progress.</DialogDescription>
                                 </DialogHeader>
-                                <div className="space-y-4 py-4">
-                                  <div className="flex items-center gap-4">
-                                    <Avatar className="h-16 w-16"><AvatarImage src={avatarUrl} /></Avatar>
-                                    <div><h3 className="text-lg font-bold">{childName}</h3><p className="text-sm text-muted-foreground">{child.email}</p></div>
+                                <div className="space-y-6 py-4">
+                                  {/* Child info */}
+                                  <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-xl">
+                                    <Avatar className="h-14 w-14 border-2 border-primary/20">
+                                      <AvatarImage src={avatarUrl} />
+                                      <AvatarFallback>{childName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                      <h3 className="text-lg font-bold">{childName}</h3>
+                                      <p className="text-sm text-muted-foreground">{child.email}</p>
+                                    </div>
+                                    <Badge variant="outline" className={child.status === 'linked' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200'}>
+                                      {child.status === 'linked' ? 'Active' : 'Pending'}
+                                    </Badge>
                                   </div>
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-3 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Status</p><p className="font-semibold text-sm capitalize">{child.status}</p></div>
-                                    <div className="p-3 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Total Lessons</p><p className="font-semibold text-sm">{child.bookings.length}</p></div>
+
+                                  {/* Stats row */}
+                                  <div className="grid grid-cols-3 gap-3">
+                                    <div className="p-3 bg-blue-50 dark:bg-blue-900/10 rounded-xl text-center border border-blue-200 dark:border-blue-800">
+                                      <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">{child.bookings.length}</p>
+                                      <p className="text-xs text-blue-600 dark:text-blue-400">Total</p>
+                                    </div>
+                                    <div className="p-3 bg-green-50 dark:bg-green-900/10 rounded-xl text-center border border-green-200 dark:border-green-800">
+                                      <p className="text-2xl font-bold text-green-700 dark:text-green-400">{child.bookings.filter(b => new Date(b.booking_date) < new Date()).length}</p>
+                                      <p className="text-xs text-green-600 dark:text-green-400">Completed</p>
+                                    </div>
+                                    <div className="p-3 bg-purple-50 dark:bg-purple-900/10 rounded-xl text-center border border-purple-200 dark:border-purple-800">
+                                      <p className="text-2xl font-bold text-purple-700 dark:text-purple-400">{child.bookings.filter(b => new Date(b.booking_date) >= new Date()).length}</p>
+                                      <p className="text-xs text-purple-600 dark:text-purple-400">Upcoming</p>
+                                    </div>
+                                  </div>
+
+                                  {/* Upcoming sessions */}
+                                  {child.bookings.filter(b => new Date(b.booking_date) >= new Date()).length > 0 && (
+                                    <div>
+                                      <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                                        <CalendarIcon className="h-4 w-4 text-primary" /> Upcoming Sessions
+                                      </h4>
+                                      <div className="space-y-2">
+                                        {child.bookings
+                                          .filter(b => new Date(b.booking_date) >= new Date())
+                                          .sort((a, b) => new Date(a.booking_date).getTime() - new Date(b.booking_date).getTime())
+                                          .map((booking) => (
+                                            <div key={booking.id} className="flex items-center justify-between p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-200/50 dark:border-blue-800/50">
+                                              <div className="flex items-center gap-3">
+                                                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                                                  <CalendarIcon className="h-4 w-4 text-primary" />
+                                                </div>
+                                                <div>
+                                                  <p className="text-sm font-medium">{booking.tutorName || 'Tutor'}</p>
+                                                  <p className="text-xs text-muted-foreground">
+                                                    {new Date(booking.booking_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at {booking.time_slot}
+                                                  </p>
+                                                </div>
+                                              </div>
+                                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">${booking.hourly_rate}/hr</Badge>
+                                            </div>
+                                          ))
+                                        }
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Past sessions with tutor feedback */}
+                                  <div>
+                                    <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                                      <MessageSquare className="h-4 w-4 text-primary" /> Session History & Tutor Feedback
+                                    </h4>
+                                    {child.bookings.filter(b => new Date(b.booking_date) < new Date()).length > 0 ? (
+                                      <div className="space-y-3">
+                                        {child.bookings
+                                          .filter(b => new Date(b.booking_date) < new Date())
+                                          .sort((a, b) => new Date(b.booking_date).getTime() - new Date(a.booking_date).getTime())
+                                          .map((booking, bIdx) => {
+                                            // Mock tutor feedback - in real app this would come from a tutor_feedback table
+                                            const mockFeedbacks = [
+                                              { rating: 8, note: "Great session! The student showed excellent understanding of the topic. Needs more practice with word problems.", areas: ["Practice more exercises", "Excellent progress"] },
+                                              { rating: 7, note: "Good progress today. We covered algebra basics and the student is getting more confident. Homework assigned for next session.", areas: ["Homework assigned", "Review fundamentals"] },
+                                              { rating: 9, note: "Outstanding performance! Solved all problems correctly. Ready to advance to the next level.", areas: ["Excellent progress"] },
+                                            ];
+                                            const feedback = mockFeedbacks[bIdx % mockFeedbacks.length];
+
+                                            return (
+                                              <div key={booking.id} className="rounded-xl border bg-card p-4 space-y-3">
+                                                <div className="flex items-center justify-between">
+                                                  <div className="flex items-center gap-3">
+                                                    <div className="h-8 w-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                                                      <CheckCircle className="h-4 w-4 text-green-600" />
+                                                    </div>
+                                                    <div>
+                                                      <p className="text-sm font-medium">{booking.tutorName || 'Tutor'}</p>
+                                                      <p className="text-xs text-muted-foreground">
+                                                        {new Date(booking.booking_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at {booking.time_slot}
+                                                      </p>
+                                                    </div>
+                                                  </div>
+                                                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">Completed</Badge>
+                                                </div>
+
+                                                {/* Tutor Feedback Note */}
+                                                <div className="bg-amber-50/50 dark:bg-amber-900/10 rounded-lg p-3 border border-amber-200/50 dark:border-amber-800/50">
+                                                  <div className="flex items-center justify-between mb-2">
+                                                    <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                                                      📝 Tutor's Note
+                                                    </span>
+                                                    <div className="flex items-center gap-1">
+                                                      <span className="text-xs text-muted-foreground">Performance:</span>
+                                                      <span className="text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">{feedback.rating}/10</span>
+                                                    </div>
+                                                  </div>
+                                                  <p className="text-sm text-foreground leading-relaxed">{feedback.note}</p>
+                                                  {feedback.areas.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1.5 mt-2">
+                                                      {feedback.areas.map((area, aIdx) => (
+                                                        <Badge key={aIdx} variant="outline" className="text-[10px] bg-white dark:bg-card">{area}</Badge>
+                                                      ))}
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            );
+                                          })
+                                        }
+                                      </div>
+                                    ) : (
+                                      <div className="text-center py-6 bg-muted/30 rounded-lg border border-dashed">
+                                        <p className="text-sm text-muted-foreground">No completed sessions yet. Feedback will appear here after lessons.</p>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </DialogContent>

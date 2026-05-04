@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Star, MapPin, Clock, Sparkles, Heart, Gift } from "lucide-react";
+import { Star, MapPin, Clock, Sparkles, Heart, Gift, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,7 @@ import { isFavorited, toggleFavorite } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 
 interface TutorCardProps {
-  tutor: Tutor & { originalRate?: number };
+  tutor: Tutor & { originalRate?: number; isBoosted?: boolean };
 }
 
 const isNewTutor = (createdAt?: string): boolean => {
@@ -57,7 +57,7 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
   };
 
   return (
-    <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+    <Card className={`group overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${tutor.isBoosted ? 'ring-2 ring-amber-400/60 shadow-amber-100 dark:shadow-amber-900/20' : ''}`}>
       <CardContent className="p-0">
         <div className="flex flex-col sm:flex-row">
           {/* Avatar Section */}
@@ -71,6 +71,12 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
               <Badge variant="new" className="absolute top-2 left-2 gap-1">
                 <Sparkles className="h-3 w-3" />
                 New
+              </Badge>
+            )}
+            {tutor.isBoosted && (
+              <Badge className="absolute top-2 left-2 gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-none shadow-md">
+                <Zap className="h-3 w-3" />
+                Featured
               </Badge>
             )}
             <button

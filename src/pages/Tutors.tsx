@@ -124,6 +124,7 @@ const Tutors = () => {
         longitude: t.longitude ?? undefined,
         distance,
         originalRate: t.offers_trial ? (t.hourly_rate || 0) + 20 : undefined,
+        isBoosted: (t as any).is_boosted || false,
       };
     });
 
@@ -144,6 +145,7 @@ const Tutors = () => {
           studentLevel: t.studentLevel || ["High School", "University"] as string[],
           distance,
           originalRate: t.id === "00000001-0000-0000-0000-000000000000" ? t.hourlyRate + 15 : undefined,
+          isBoosted: t.id === "00000001-0000-0000-0000-000000000000", // First mock tutor is boosted as demo
         };
       });
 
@@ -220,7 +222,10 @@ const Tutors = () => {
         break;
     }
 
-    return result;
+    // Always sort boosted tutors to the top regardless of other sort
+    const boosted = result.filter((t: any) => t.isBoosted);
+    const notBoosted = result.filter((t: any) => !t.isBoosted);
+    return [...boosted, ...notBoosted];
   }, [allTutors, subjectFilter, locationFilter, sortBy, selectedPriceRange, selectedStudentLevels, selectedAvailability]);
 
   const handleSearch = () => {

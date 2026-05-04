@@ -102,6 +102,16 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
         toast.success(isGroupLesson ? "Group booking confirmed!" : "Booking confirmed!", {
             description: `Your ${isGroupLesson ? `group (${groupSize} students)` : ''} session is scheduled for ${format(date as Date, "MMMM do")} at ${selectedSlot}.`,
         });
+
+        // Auto-add to Google Calendar
+        try {
+            const startDate = format(date as Date, "yyyyMMdd");
+            const title = encodeURIComponent(`Tutoring Session`);
+            const details = encodeURIComponent(`Lesson at ${selectedSlot}. Rate: $${hourlyRate}/hr`);
+            const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDate}/${startDate}&details=${details}`;
+            window.open(calUrl, '_blank');
+        } catch {}
+
         setBookedSlots((prev) => [...prev, selectedSlot as string]);
         setSelectedSlot(null);
     };
@@ -167,28 +177,85 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
                         Select a time slot for your {hourlyRate > 0 ? `$${hourlyRate}/hr` : "free"} lesson.
                     </p>
 
-                    <div className="flex flex-wrap gap-2 max-h-[240px] overflow-y-auto pr-1">
+
+                    <div className="max-h-[280px] overflow-y-auto pr-1 space-y-4">
                         {date ? (
-                            TIME_SLOTS.map((time) => {
-                                const disabled = isSlotUnavailable(time);
-                                return (
-                                    <Button
-                                        key={time}
-                                        variant={selectedSlot === time ? "default" : disabled ? "secondary" : "outline"}
-                                        className={`min-w-[100px] justify-start h-auto py-2 px-3 text-sm transition-all ${
-                                            disabled ? "opacity-70 cursor-not-allowed bg-muted text-muted-foreground border-dashed"
-                                                : "hover:border-primary hover:bg-primary/5"
-                                        }`}
-                                        disabled={disabled}
-                                        onClick={() => !disabled && setSelectedSlot(time)}
-                                    >
-                                        <Clock className={`mr-1.5 h-3.5 w-3.5 ${disabled ? "opacity-50" : ""}`} />
-                                        <span className={disabled ? "line-through opacity-70" : ""}>{time}</span>
-                                    </Button>
-                                );
-                            })
+                            <>
+                                {/* Morning slots */}
+                                <div>
+                                    <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mb-2 flex items-center gap-1.5">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500 inline-block" />
+                                        Morning
+                                    </p>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {TIME_SLOTS.filter(t => t.includes("AM")).map((time) => {
+                                            const disabled = isSlotUnavailable(time);
+                                            const selected = selectedSlot === time;
+                                            return (
+                                                <button key={time} disabled={disabled}
+                                                    onClick={() => !disabled && setSelectedSlot(time)}
+                                                    className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-all text-center ${
+                                                        selected ? "bg-primary text-primary-foreground border-primary shadow-md scale-[1.02]"
+                                                        : disabled ? "opacity-40 cursor-not-allowed bg-muted/50 text-muted-foreground border-dashed line-through"
+                                                        : "bg-card hover:border-primary hover:bg-primary/5 hover:shadow-sm"
+                                                    }`}>
+                                                    {time}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                                {/* Afternoon slots */}
+                                <div>
+                                    <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2 flex items-center gap-1.5">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-blue-500 inline-block" />
+                                        Afternoon
+                                    </p>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {TIME_SLOTS.filter(t => t.includes("PM") && parseInt(t) <= 5 && parseInt(t) !== 12 || t === "12:00 PM").map((time) => {
+                                            const disabled = isSlotUnavailable(time);
+                                            const selected = selectedSlot === time;
+                                            return (
+                                                <button key={time} disabled={disabled}
+                                                    onClick={() => !disabled && setSelectedSlot(time)}
+                                                    className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-all text-center ${
+                                                        selected ? "bg-primary text-primary-foreground border-primary shadow-md scale-[1.02]"
+                                                        : disabled ? "opacity-40 cursor-not-allowed bg-muted/50 text-muted-foreground border-dashed line-through"
+                                                        : "bg-card hover:border-primary hover:bg-primary/5 hover:shadow-sm"
+                                                    }`}>
+                                                    {time}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                                {/* Evening slots */}
+                                <div>
+                                    <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-2 flex items-center gap-1.5">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-purple-500 inline-block" />
+                                        Evening
+                                    </p>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {TIME_SLOTS.filter(t => t.includes("PM") && parseInt(t) >= 6 && parseInt(t) !== 12).map((time) => {
+                                            const disabled = isSlotUnavailable(time);
+                                            const selected = selectedSlot === time;
+                                            return (
+                                                <button key={time} disabled={disabled}
+                                                    onClick={() => !disabled && setSelectedSlot(time)}
+                                                    className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-all text-center ${
+                                                        selected ? "bg-primary text-primary-foreground border-primary shadow-md scale-[1.02]"
+                                                        : disabled ? "opacity-40 cursor-not-allowed bg-muted/50 text-muted-foreground border-dashed line-through"
+                                                        : "bg-card hover:border-primary hover:bg-primary/5 hover:shadow-sm"
+                                                    }`}>
+                                                    {time}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </>
                         ) : (
-                            <div className="col-span-full py-8 text-center text-muted-foreground border rounded-md border-dashed w-full">
+                            <div className="py-8 text-center text-muted-foreground border rounded-md border-dashed w-full">
                                 Please select a date from the calendar to view available times.
                             </div>
                         )}
