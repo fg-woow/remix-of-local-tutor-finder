@@ -38,6 +38,7 @@ const TutorDashboard = () => {
   const [bookings, setBookings] = useState<BookingInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [boostDialogOpen, setBoostDialogOpen] = useState(false);
   const [boostPlan, setBoostPlan] = useState<string>("weekly");
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<BookingInfo | null>(null);
