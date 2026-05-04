@@ -9,7 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
-import { createBooking, getTutorBookingsForDate } from "@/lib/api";
+import { createBooking, getTutorBookingsForDate, getParentChildren, getProfileByUserId } from "@/lib/api";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface BookingCalendarProps {
     tutorId: string;
@@ -50,6 +52,46 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
     const [showVerification, setShowVerification] = useState(false);
     const mockBalance = 50.00;
 
+    // Parent features
+    const { role } = useAuth();
+    const [children, setChildren] = useState<any[]>([]);
+    const [selectedChildren, setSelectedChildren] = useState<string[]>([]);
+    const [isLoadingChildren, setIsLoadingChildren] = useState(false);
+
+    useEffect(() => {
+        if (role === "parent" && user) {
+            const fetchChildren = async () => {
+                setIsLoadingChildren(true);
+                const { data: links } = await getParentChildren(user.id);
+                if (links) {
+                    const childrenWithProfiles = await Promise.all(
+                        links.filter(l => l.status === 'linked').map(async (link: any) => {
+                            if (link.child_id) {
+                                const { data: prof } = await getProfileByUserId(link.child_id);
+                                return { ...link, profile: prof };
+                            }
+                            return link;
+                        })
+                    );
+                    setChildren(childrenWithProfiles.filter(c => c.profile));
+                }
+                setIsLoadingChildren(false);
+            };
+            fetchChildren();
+        }
+    }, [role, user]);
+
+    // Update group lesson state based on selected children
+    useEffect(() => {
+        if (selectedChildren.length > 1) {
+            setIsGroupLesson(true);
+            setGroupSize(selectedChildren.length);
+        } else if (selectedChildren.length === 1) {
+            setIsGroupLesson(false);
+            setGroupSize(1);
+        }
+    }, [selectedChildren]);
+
     useEffect(() => {
         if (!date) return;
         const fetchBookedSlots = async () => {
@@ -84,13 +126,24 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
 
     const processBooking = async () => {
         setIsBooking(true);
-        const { data, error } = await createBooking({
-            tutor_id: tutorId,
-            student_id: user!.id as string,
-            booking_date: format(date as Date, "yyyy-MM-dd"),
-            time_slot: selectedSlot as string,
-            hourly_rate: hourlyRate,
-        });
+        
+        // Determine who the booking is for
+        const targetStudentIds = role === "parent" && selectedChildren.length > 0 
+            ? selectedChildren 
+            : [user!.id];
+
+        const results = await Promise.all(targetStudentIds.map(async (studentId) => {
+            return await createBooking({
+                tutor_id: tutorId,
+                student_id: studentId,
+                booking_date: format(date as Date, "yyyy-MM-dd"),
+                time_slot: selectedSlot as string,
+                hourly_rate: isGroupLesson ? perStudentRate : hourlyRate,
+            });
+        }));
+
+        const error = results.find(r => r.error)?.error;
+        
         setIsBooking(false);
         setIsPaymentOpen(false);
         setCardNumber(""); setExpiry(""); setCvc("");
@@ -272,6 +325,37 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
                                     {format(date, "MMM do")} at {selectedSlot}
                                 </p>
                                 <div className="mt-4 flex flex-col gap-3">
+                                    {/* Parent: Select Children */}
+                                    {role === "parent" && children.length > 0 && (
+                                        <div className="space-y-3 p-3 border rounded-lg bg-blue-50/50 dark:bg-blue-900/10">
+                                            <label className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">Assign to child(ren)</label>
+                                            <div className="space-y-2">
+                                                {children.map((child) => (
+                                                    <div key={child.child_id} className="flex items-center space-x-2">
+                                                        <Checkbox 
+                                                            id={`child-${child.child_id}`}
+                                                            checked={selectedChildren.includes(child.child_id)}
+                                                            onCheckedChange={(checked) => {
+                                                                if (checked) {
+                                                                    setSelectedChildren(prev => [...prev, child.child_id]);
+                                                                } else {
+                                                                    setSelectedChildren(prev => prev.filter(id => id !== child.child_id));
+                                                                }
+                                                            }}
+                                                        />
+                                                        <Label htmlFor={`child-${child.child_id}`} className="text-sm cursor-pointer flex items-center gap-2">
+                                                            {child.profile.full_name}
+                                                            <span className="text-[10px] bg-white dark:bg-card px-1.5 py-0.5 rounded border text-muted-foreground">Student</span>
+                                                        </Label>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            {selectedChildren.length === 0 && (
+                                                <p className="text-[10px] text-amber-600 font-medium">Please select at least one child to assign the lesson.</p>
+                                            )}
+                                        </div>
+                                    )}
+
                                     {/* Group Lesson Toggle */}
                                     <div className="flex items-center gap-2 rounded-lg border p-3 bg-purple-50/50 dark:bg-purple-900/10">
                                         <input type="checkbox" id="isGroupLesson" checked={isGroupLesson}
@@ -326,7 +410,12 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
                             </div>
                         </div>
 
-                        <Button className="w-full" size="lg" onClick={handleBook} disabled={isBooking}>
+                        <Button 
+                            className="w-full" 
+                            size="lg" 
+                            onClick={handleBook} 
+                            disabled={isBooking || (role === "parent" && children.length > 0 && selectedChildren.length === 0)}
+                        >
                             {hourlyRate > 0 ? "Proceed to Payment" : "Confirm Booking"}
                         </Button>
                         <p className="text-xs text-center text-muted-foreground">
