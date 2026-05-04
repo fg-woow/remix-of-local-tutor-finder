@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -19,13 +19,17 @@ import {
   Heart,
   Trophy,
   Medal,
-  Edit
+  Edit,
+  History,
+  Star as StarIcon
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { getParentChildren, getChildBookings, getProfileByUserId } from "@/lib/api";
 import { useAuth, UserProfile } from "@/hooks/useAuth";
 
 const isNewUser = (createdAt?: string): boolean => {
@@ -46,6 +50,39 @@ const getYouTubeEmbedUrl = (url: string): string | null => {
 /* ===== STUDENT PROFILE ===== */
 const StudentProfile = ({ profile }: { profile: UserProfile }) => {
   const isNew = isNewUser(profile.created_at);
+  const [feedbacks, setFeedbacks] = useState<any[]>([]);
+  const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
+
+  useEffect(() => {
+    if (profile.role === "parent") {
+      const fetchFeedbacks = async () => {
+        setLoadingFeedbacks(true);
+        const { data: children } = await getParentChildren(profile.id);
+        
+        const allFeedbacks: any[] = [];
+        for (const child of children) {
+          if (child.child_id) {
+            const { data: bookings } = await getChildBookings(child.child_id);
+            const pastBookings = bookings.filter((b: any) => 
+              (b.status === "completed" || b.performance_rating || b.tutor_notes)
+            );
+            
+            for (const booking of pastBookings) {
+              const { data: tutorProf } = await getProfileByUserId(booking.tutor_id);
+              allFeedbacks.push({
+                ...booking,
+                childName: child.profile?.full_name || child.child_email,
+                tutorName: tutorProf?.full_name || "Unknown Tutor"
+              });
+            }
+          }
+        }
+        setFeedbacks(allFeedbacks.sort((a, b) => new Date(b.booking_date).getTime() - new Date(a.booking_date).getTime()));
+        setLoadingFeedbacks(false);
+      };
+      fetchFeedbacks();
+    }
+  }, [profile]);
 
   return (
     <div className="space-y-6">
@@ -150,11 +187,67 @@ const StudentProfile = ({ profile }: { profile: UserProfile }) => {
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/30 transition-colors group-hover:bg-amber-200 dark:group-hover:bg-amber-900/50">
               <Star className="h-6 w-6 text-amber-600 dark:text-amber-400" />
             </div>
-            <h3 className="font-semibold text-foreground">My Reviews</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Reviews you've written</p>
-            <Button variant="outline" size="sm" className="mt-3" disabled>
-              Coming Soon
-            </Button>
+            <h3 className="font-semibold text-foreground">Feedbacks</h3>
+            <p className="mt-1 text-sm text-muted-foreground">Linked children's performance</p>
+            
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="mt-3">
+                  View Feedbacks
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <History className="h-5 w-5 text-primary" />
+                    Lesson Feedbacks
+                  </DialogTitle>
+                  <DialogDescription>
+                    Performance notes and ratings from past lessons.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4 pt-4">
+                  {loadingFeedbacks ? (
+                    <div className="flex justify-center py-8">
+                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    </div>
+                  ) : feedbacks.length > 0 ? (
+                    feedbacks.map((fb) => (
+                      <div key={fb.id} className="p-4 rounded-xl border bg-muted/30 space-y-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-bold text-sm">{fb.childName}</h4>
+                            <p className="text-xs text-muted-foreground">with {fb.tutorName} • {new Date(fb.booking_date).toLocaleDateString()}</p>
+                          </div>
+                          {fb.performance_rating && (
+                            <div className="flex items-center gap-0.5 text-amber-500">
+                              {[...Array(5)].map((_, i) => (
+                                <StarIcon key={i} className={`h-3 w-3 ${i < fb.performance_rating ? 'fill-current' : 'text-muted'}`} />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        {fb.tutor_notes ? (
+                          <p className="text-sm italic text-foreground bg-white dark:bg-card p-3 rounded-lg border border-dashed">
+                            "{fb.tutor_notes}"
+                          </p>
+                        ) : (
+                          <p className="text-xs text-muted-foreground italic">No notes provided for this session.</p>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 space-y-2">
+                      <div className="mx-auto h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+                        <Star className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">No past feedbacks found yet.</p>
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
       </div>
