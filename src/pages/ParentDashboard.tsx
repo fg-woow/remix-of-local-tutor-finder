@@ -205,6 +205,7 @@ const ParentDashboard = () => {
   const [isLinking, setIsLinking] = useState(false);
   const [children, setChildren] = useState<ChildInfo[]>([]);
   const [isLoadingChildren, setIsLoadingChildren] = useState(true);
+  const [isAddChildDialogOpen, setIsAddChildDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -300,6 +301,7 @@ const ParentDashboard = () => {
     }
 
     setChildEmail("");
+    setIsAddChildDialogOpen(false);
     setIsLinking(false);
   };
 
@@ -753,13 +755,44 @@ const ParentDashboard = () => {
                     })}
 
                     {/* Add Child */}
-                    <Card className="rounded-2xl shadow-none border-2 border-dashed bg-transparent hover:bg-muted/30 transition-colors flex flex-col items-center justify-center p-6 text-center cursor-pointer">
-                      <div className="h-12 w-12 rounded-full border border-muted-foreground/30 flex items-center justify-center mb-3">
-                        <Plus className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                      <h4 className="font-bold text-sm mb-1">Add Another Child</h4>
-                      <p className="text-xs text-muted-foreground">Link a new child to start monitoring their learning.</p>
-                    </Card>
+                    <Dialog open={isAddChildDialogOpen} onOpenChange={setIsAddChildDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Card className="rounded-2xl shadow-none border-2 border-dashed bg-transparent hover:bg-muted/30 transition-colors flex flex-col items-center justify-center p-6 text-center cursor-pointer">
+                          <div className="h-12 w-12 rounded-full border border-muted-foreground/30 flex items-center justify-center mb-3">
+                            <Plus className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                          <h4 className="font-bold text-sm mb-1">Add Another Child</h4>
+                          <p className="text-xs text-muted-foreground">Link a new child to start monitoring their learning.</p>
+                        </Card>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Link a Child</DialogTitle>
+                          <DialogDescription>
+                            Enter your child's email address to link their account to your dashboard.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleLinkChild} className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="childEmail">Child's Email Address</Label>
+                            <Input 
+                              id="childEmail" 
+                              type="email" 
+                              placeholder="child@example.com" 
+                              value={childEmail}
+                              onChange={(e) => setChildEmail(e.target.value)}
+                              required
+                            />
+                          </div>
+                          <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setIsAddChildDialogOpen(false)}>Cancel</Button>
+                            <Button type="submit" disabled={isLinking}>
+                              {isLinking ? "Linking..." : "Link Child"}
+                            </Button>
+                          </DialogFooter>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
               </div>
