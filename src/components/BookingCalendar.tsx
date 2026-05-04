@@ -208,10 +208,10 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
 
     const applyCoupon = () => {
         if (couponCode.toLowerCase() === "save20") {
-            setDiscount(basePrice * 0.2);
+            setDiscount(basePricePerSession * 0.2);
             toast.success("Coupon applied! 20% off.");
         } else if (couponCode.toLowerCase() === "group10") {
-            setDiscount(basePrice * 0.1);
+            setDiscount(basePricePerSession * 0.1);
             toast.success("Group coupon applied! 10% off.");
         } else {
             setDiscount(0);
@@ -406,7 +406,7 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
                                                 ))}
                                             </select>
                                             <p className="text-xs text-green-600 dark:text-green-400">
-                                                💡 Per student: ${perStudentRate.toFixed(2)}/hr (Total: ${basePrice.toFixed(2)})
+                                                💡 Per student: ${perStudentRate.toFixed(2)}/hr (Total: ${basePricePerSession.toFixed(2)})
                                             </p>
                                         </div>
                                     )}
@@ -431,7 +431,7 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
                                             <Badge variant="outline">{duration} {duration === 1 ? 'Hour' : 'Hours'}</Badge>
                                             {isGroupLesson && <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">{groupSize} Students</Badge>}
                                         </div>
-                                        <Badge variant="default" className="text-base px-3 py-1">${basePrice.toFixed(2)}</Badge>
+                                        <Badge variant="default" className="text-base px-3 py-1">${basePricePerSession.toFixed(2)}</Badge>
                                     </div>
                                 </div>
                             </div>
@@ -576,7 +576,7 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
                                         {useBalance && (
                                             <div className="flex justify-between text-blue-600 border-t pt-1 mt-1">
                                                 <span>Balance Applied</span>
-                                                <span>-${Math.min(mockBalance, basePrice - discount + tipAmount).toFixed(2)}</span>
+                                                <span>-${Math.min(mockBalance, basePricePerSession - discount + tipAmount).toFixed(2)}</span>
                                             </div>
                                         )}
                                         <div className="flex justify-between font-bold border-t pt-1 mt-1 text-base">
