@@ -209,6 +209,7 @@ const ParentDashboard = () => {
   const { toast } = useToast();
   const [childEmail, setChildEmail] = useState("");
   const [isLinking, setIsLinking] = useState(false);
+  const [children, setChildren] = useState<ChildInfo[]>([]);
   const [isLoadingChildren, setIsLoadingChildren] = useState(true);
   const [isAddChildDialogOpen, setIsAddChildDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
