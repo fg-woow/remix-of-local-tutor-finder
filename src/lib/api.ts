@@ -489,11 +489,18 @@ export async function unlinkChild(linkId: string) {
 
 /** Get child's bookings (for parent dashboard) */
 export async function getChildBookings(childId: string) {
-  const { data, error } = await supabase
-    .from("bookings")
-    .select("*")
-    .eq("student_id", childId)
-    .order("booking_date", { ascending: true });
+  const { data, error } = await supabase.rpc('get_child_bookings_for_parent', { child_uuid: childId });
+  
+  // Fallback to direct select if RPC is not available yet
+  if (error && error.message.includes("Could not find the function")) {
+    const { data: fallbackData, error: fallbackErr } = await supabase
+      .from("bookings")
+      .select("*")
+      .eq("student_id", childId)
+      .order("booking_date", { ascending: true });
+    return { data: fallbackData || [], error: fallbackErr };
+  }
+  
   return { data: data || [], error };
 }
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Save, MapPin, DollarSign, Clock, BookOpen, GraduationCap, Award, Users, Video, FileText, Plus, X } from "lucide-react";
+import { Save, MapPin, DollarSign, Clock, BookOpen, GraduationCap, Award, Users, Video, FileText, Plus, X, Navigation } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,8 @@ const ProfileEdit = () => {
     intro_video_url: "",
     suitable_for: [] as string[],
     offers_trial: false,
+    travel_radius: "",
+    travel_rate_per_km: "",
   });
 
   useEffect(() => {
@@ -71,6 +73,8 @@ const ProfileEdit = () => {
         intro_video_url: profile.intro_video_url || "",
         suitable_for: profile.suitable_for || [],
         offers_trial: profile.offers_trial || false,
+        travel_radius: (profile as any).travel_radius?.toString() || "",
+        travel_rate_per_km: (profile as any).travel_rate_per_km?.toString() || "",
       });
     }
   }, [profile]);
@@ -94,6 +98,8 @@ const ProfileEdit = () => {
       intro_video_url: formData.intro_video_url || null,
       suitable_for: formData.suitable_for,
       offers_trial: formData.offers_trial,
+      travel_radius: formData.travel_radius ? parseInt(formData.travel_radius) : null,
+      travel_rate_per_km: formData.travel_rate_per_km ? parseFloat(formData.travel_rate_per_km) : null,
     };
 
     const { error } = await updateProfile(updates);
@@ -464,6 +470,56 @@ const ProfileEdit = () => {
                           onChange={handleChange}
                           placeholder="45"
                         />
+                      </div>
+
+                      {/* Travel Radius */}
+                      <div className="space-y-4 rounded-lg border p-4 bg-muted/20">
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-foreground">
+                            <Navigation className="mr-1 inline-block h-4 w-4" />
+                            Travel Radius
+                          </label>
+                          <p className="text-xs text-muted-foreground mb-3">
+                            Set the maximum distance you're willing to travel for lessons and the extra charge per km.
+                          </p>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label htmlFor="travel_radius" className="text-xs text-muted-foreground mb-1 block">
+                                Max Distance (km)
+                              </label>
+                              <Input
+                                id="travel_radius"
+                                name="travel_radius"
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={formData.travel_radius}
+                                onChange={handleChange}
+                                placeholder="e.g., 15"
+                              />
+                            </div>
+                            <div>
+                              <label htmlFor="travel_rate_per_km" className="text-xs text-muted-foreground mb-1 block">
+                                Extra $/km
+                              </label>
+                              <Input
+                                id="travel_rate_per_km"
+                                name="travel_rate_per_km"
+                                type="number"
+                                min="0"
+                                step="0.50"
+                                value={formData.travel_rate_per_km}
+                                onChange={handleChange}
+                                placeholder="e.g., 2.00"
+                              />
+                            </div>
+                          </div>
+                          {formData.travel_radius && (
+                            <p className="text-xs text-primary mt-2">
+                              💡 Max travel fee: ${(Number(formData.travel_radius) * Number(formData.travel_rate_per_km || 0)).toFixed(2)} for {formData.travel_radius} km
+                            </p>
+                          )}
+                        </div>
                       </div>
 
                       {/* Experience */}

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Users, MapPin, Clock, CheckCircle } from "lucide-react";
+import { ArrowRight, Users, MapPin, Clock, CheckCircle, BarChart3, BookOpen, Target, TrendingUp } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
@@ -186,6 +186,95 @@ const Index = () => {
                   <TutorCard tutor={tutor} />
                 </motion.div>
               ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Seamless and Data-Driven Learning Journey */}
+        <section className="py-20 bg-gradient-to-b from-background to-muted/30">
+          <div className="container">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="mb-12 text-center"
+            >
+              <span className="mb-4 inline-block rounded-full bg-primary-light px-4 py-1.5 text-sm font-medium text-primary-dark">
+                Data-Driven Learning
+              </span>
+              <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+                {t("learning_journey.title", { defaultValue: "Seamless Learning Journey" })}
+              </h2>
+              <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+                {t("learning_journey.subtitle", { defaultValue: "Track every session, visualize progress, and make data-driven decisions for a better learning experience." })}
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+              variants={staggerContainer}
+              className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
+            >
+              {[
+                {
+                  icon: BookOpen,
+                  title: t("learning_journey.sessions_title", { defaultValue: "Session History" }),
+                  description: t("learning_journey.sessions_desc", { defaultValue: "Complete log of all your past and upcoming sessions with tutors in one place." }),
+                  color: "bg-blue-100 dark:bg-blue-900/30",
+                  iconColor: "text-blue-600 dark:text-blue-400",
+                },
+                {
+                  icon: BarChart3,
+                  title: t("learning_journey.analytics_title", { defaultValue: "Progress Charts" }),
+                  description: t("learning_journey.analytics_desc", { defaultValue: "Visualize your learning progress with interactive charts and performance metrics." }),
+                  color: "bg-green-100 dark:bg-green-900/30",
+                  iconColor: "text-green-600 dark:text-green-400",
+                },
+                {
+                  icon: Target,
+                  title: t("learning_journey.goals_title", { defaultValue: "Tutor Feedback" }),
+                  description: t("learning_journey.goals_desc", { defaultValue: "Receive personalized feedback from tutors after each session to guide your study." }),
+                  color: "bg-amber-100 dark:bg-amber-900/30",
+                  iconColor: "text-amber-600 dark:text-amber-400",
+                },
+                {
+                  icon: TrendingUp,
+                  title: t("learning_journey.growth_title", { defaultValue: "Rewards & Badges" }),
+                  description: t("learning_journey.growth_desc", { defaultValue: "Earn activity badges and unlock discounts as you complete more lessons." }),
+                  color: "bg-purple-100 dark:bg-purple-900/30",
+                  iconColor: "text-purple-600 dark:text-purple-400",
+                },
+              ].map((item, index) => (
+                <motion.div
+                  key={item.title}
+                  variants={fadeInUp}
+                  className="group relative rounded-2xl border bg-card p-6 text-center hover-lift hover:shadow-glow transition-all"
+                >
+                  <div className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${item.color} transition-colors`}>
+                    <item.icon className={`h-7 w-7 ${item.iconColor}`} />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-foreground">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="mt-10 text-center"
+            >
+              <Button variant="outline" size="lg" asChild>
+                <Link to="/bookings">
+                  View Your Learning History
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
             </motion.div>
           </div>
         </section>
