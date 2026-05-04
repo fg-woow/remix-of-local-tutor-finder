@@ -948,44 +948,6 @@ const ParentDashboard = () => {
                   </CardFooter>
                 </Card>
 
-                {/* Safety Features */}
-                <Card className="rounded-2xl shadow-sm border-none bg-white dark:bg-card">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base font-bold flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-green-500" />
-                      Safety Features
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4 pt-2">
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                      <div>
-                        <p className="text-xs font-bold text-foreground leading-none mb-1">Verified Tutors</p>
-                        <p className="text-[10px] text-muted-foreground leading-snug">
-                          All tutors are verified and background-checked
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                      <div>
-                        <p className="text-xs font-bold text-foreground leading-none mb-1">Lesson Monitoring</p>
-                        <p className="text-[10px] text-muted-foreground leading-snug">
-                          View all booked lessons and their status
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                      <div>
-                        <p className="text-xs font-bold text-foreground leading-none mb-1">Review Access</p>
-                        <p className="text-[10px] text-muted-foreground leading-snug">
-                          Read reviews from other parents and students
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
 
               </div>
             </div>
