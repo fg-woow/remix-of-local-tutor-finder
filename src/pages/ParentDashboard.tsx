@@ -23,7 +23,10 @@ import {
   MoreVertical,
   Minus,
   Send,
-  HeadphonesIcon
+  HeadphonesIcon,
+  History,
+  FileText,
+  BarChart3
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -67,6 +70,8 @@ interface ChildInfo {
     status: string;
     tutor_id: string;
     tutorName?: string;
+    tutor_notes?: string;
+    performance_rating?: number;
   }>;
 }
 
@@ -204,9 +209,9 @@ const ParentDashboard = () => {
   const { toast } = useToast();
   const [childEmail, setChildEmail] = useState("");
   const [isLinking, setIsLinking] = useState(false);
-  const [children, setChildren] = useState<ChildInfo[]>([]);
   const [isLoadingChildren, setIsLoadingChildren] = useState(true);
   const [isAddChildDialogOpen, setIsAddChildDialogOpen] = useState(false);
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -678,27 +683,17 @@ const ParentDashboard = () => {
                                         }
                                       </div>
                                     </div>
-                                  )}
-
-                                  {/* Past sessions with tutor feedback */}
+                                  )}                                   {/* Past sessions with tutor feedback */}
                                   <div>
                                     <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                                       <MessageSquare className="h-4 w-4 text-primary" /> Session History & Tutor Feedback
                                     </h4>
-                                    {child.bookings.filter(b => new Date(b.booking_date) < new Date()).length > 0 ? (
+                                    {child.bookings.filter(b => b.status === "completed" || (new Date(b.booking_date) < new Date() && b.status === "confirmed")).length > 0 ? (
                                       <div className="space-y-3">
                                         {child.bookings
-                                          .filter(b => new Date(b.booking_date) < new Date())
+                                          .filter(b => b.status === "completed" || (new Date(b.booking_date) < new Date() && b.status === "confirmed"))
                                           .sort((a, b) => new Date(b.booking_date).getTime() - new Date(a.booking_date).getTime())
-                                          .map((booking, bIdx) => {
-                                            // Mock tutor feedback - in real app this would come from a tutor_feedback table
-                                            const mockFeedbacks = [
-                                              { rating: 8, note: "Great session! The student showed excellent understanding of the topic. Needs more practice with word problems.", areas: ["Practice more exercises", "Excellent progress"] },
-                                              { rating: 7, note: "Good progress today. We covered algebra basics and the student is getting more confident. Homework assigned for next session.", areas: ["Homework assigned", "Review fundamentals"] },
-                                              { rating: 9, note: "Outstanding performance! Solved all problems correctly. Ready to advance to the next level.", areas: ["Excellent progress"] },
-                                            ];
-                                            const feedback = mockFeedbacks[bIdx % mockFeedbacks.length];
-
+                                          .map((booking) => {
                                             return (
                                               <div key={booking.id} className="rounded-xl border bg-card p-4 space-y-3">
                                                 <div className="flex items-center justify-between">
@@ -713,7 +708,9 @@ const ParentDashboard = () => {
                                                       </p>
                                                     </div>
                                                   </div>
-                                                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">Completed</Badge>
+                                                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                                                    {booking.status === 'completed' ? 'Completed' : 'Past'}
+                                                  </Badge>
                                                 </div>
 
                                                 {/* Tutor Feedback Note */}
@@ -722,18 +719,17 @@ const ParentDashboard = () => {
                                                     <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1">
                                                       📝 Tutor's Note
                                                     </span>
-                                                    <div className="flex items-center gap-1">
-                                                      <span className="text-xs text-muted-foreground">Performance:</span>
-                                                      <span className="text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">{feedback.rating}/10</span>
-                                                    </div>
+                                                    {booking.performance_rating && (
+                                                      <div className="flex items-center gap-1">
+                                                        <span className="text-xs text-muted-foreground">Performance:</span>
+                                                        <span className="text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">{booking.performance_rating}/10</span>
+                                                      </div>
+                                                    )}
                                                   </div>
-                                                  <p className="text-sm text-foreground leading-relaxed">{feedback.note}</p>
-                                                  {feedback.areas.length > 0 && (
-                                                    <div className="flex flex-wrap gap-1.5 mt-2">
-                                                      {feedback.areas.map((area, aIdx) => (
-                                                        <Badge key={aIdx} variant="outline" className="text-[10px] bg-white dark:bg-card">{area}</Badge>
-                                                      ))}
-                                                    </div>
+                                                  {booking.tutor_notes ? (
+                                                    <p className="text-sm text-foreground leading-relaxed">{booking.tutor_notes}</p>
+                                                  ) : (
+                                                    <p className="text-sm text-muted-foreground italic">No feedback provided yet for this session.</p>
                                                   )}
                                                 </div>
                                               </div>
@@ -864,6 +860,16 @@ const ParentDashboard = () => {
                 {/* Quick Actions */}
                 <div className="space-y-3">
                   <h3 className="text-sm font-bold text-foreground pl-1">Quick Actions</h3>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start rounded-xl h-12 bg-white dark:bg-card shadow-sm border-none font-semibold text-primary hover:text-primary cursor-pointer"
+                    onClick={() => setIsHistoryDialogOpen(true)}
+                  >
+                    <History className="mr-3 h-4 w-4" />
+                    Past Lessons & Performance
+                  </Button>
+
                   <Button variant="outline" className="w-full justify-start rounded-xl h-12 bg-white dark:bg-card shadow-sm border-none font-semibold text-primary hover:text-primary" asChild>
                     <Link to="/tutors">
                       <Search className="mr-3 h-4 w-4" />
@@ -1009,6 +1015,84 @@ const ParentDashboard = () => {
       </main>
 
       <Footer />
+      {/* History Dialog */}
+      <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" /> Past Lessons & Performance
+            </DialogTitle>
+            <DialogDescription>
+              Review all completed sessions and feedback for your children.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {children.map(child => {
+              const pastLessons = child.bookings
+                .filter(b => b.status === "completed" || (new Date(b.booking_date) < new Date() && b.status === "confirmed"))
+                .sort((a, b) => new Date(b.booking_date).getTime() - new Date(a.booking_date).getTime());
+              
+              if (pastLessons.length === 0) return null;
+
+              return (
+                <div key={child.linkId} className="space-y-3">
+                  <h3 className="font-bold text-sm flex items-center gap-2 sticky top-0 bg-background py-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={child.profile?.avatar_url || ""} />
+                      <AvatarFallback>{(child.profile?.full_name || child.email).substring(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    {child.profile?.full_name || child.email}
+                  </h3>
+                  <div className="space-y-3">
+                    {pastLessons.map(booking => (
+                      <div key={booking.id} className="rounded-xl border bg-card p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">{booking.tutorName || 'Tutor'}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(booking.booking_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} • {booking.time_slot}
+                              </p>
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                            {booking.status === 'completed' ? 'Completed' : 'Past'}
+                          </Badge>
+                        </div>
+                        <div className="bg-amber-50/50 dark:bg-amber-900/10 rounded-lg p-3 border border-amber-200/50 dark:border-amber-800/50">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1">📝 Tutor's Note</span>
+                            {booking.performance_rating && (
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs text-muted-foreground">Score:</span>
+                                <span className="text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">{booking.performance_rating}/10</span>
+                              </div>
+                            )}
+                          </div>
+                          {booking.tutor_notes ? (
+                            <p className="text-sm text-foreground leading-relaxed">{booking.tutor_notes}</p>
+                          ) : (
+                            <p className="text-sm text-muted-foreground italic">No feedback provided yet for this session.</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+            {children.every(c => c.bookings.filter(b => b.status === "completed" || (new Date(b.booking_date) < new Date() && b.status === "confirmed")).length === 0) && (
+              <div className="text-center py-12">
+                <FileText className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-muted-foreground">No past lessons found.</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

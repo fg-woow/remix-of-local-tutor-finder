@@ -3,6 +3,7 @@
  * 
  * Centralized data access layer for all Supabase operations.
  * Provides typed functions for profiles, reviews, and bookings.
+ * (v2: Added feedback support)
  */
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
@@ -189,6 +190,21 @@ export async function completeBooking(bookingId: string) {
   const { data, error } = await supabase
     .from("bookings")
     .update({ status: "completed" })
+    .eq("id", bookingId)
+    .select()
+    .single();
+  return { data, error };
+}
+
+/** Save tutor feedback/notes for a booking */
+export async function updateBookingNotes(bookingId: string, notes: string, rating: number) {
+  const { data, error } = await supabase
+    .from("bookings")
+    .update({ 
+      tutor_notes: notes,
+      performance_rating: rating,
+      updated_at: new Date().toISOString()
+    })
     .eq("id", bookingId)
     .select()
     .single();

@@ -13,8 +13,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
-import { getMyBookings, getProfileByUserId, getReviewsByTutorId } from "@/lib/api";
+import { getMyBookings, getProfileByUserId, getReviewsByTutorId, completeBooking, updateBookingNotes } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "react-i18next";
 
 interface BookingInfo {
@@ -35,8 +38,12 @@ const TutorDashboard = () => {
   const [bookings, setBookings] = useState<BookingInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [reviews, setReviews] = useState<any[]>([]);
-  const [boostDialogOpen, setBoostDialogOpen] = useState(false);
   const [boostPlan, setBoostPlan] = useState<string>("weekly");
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<BookingInfo | null>(null);
+  const [tutorNotes, setTutorNotes] = useState("");
+  const [perfRating, setPerfRating] = useState(8);
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
 
   useEffect(() => {
     if (!authLoading && (!user || role !== "tutor")) {
@@ -114,6 +121,42 @@ const TutorDashboard = () => {
     });
     setBoostDialogOpen(false);
   };
+
+  const handleFeedbackSubmit = async () => {
+    if (!selectedBooking) return;
+    setIsSubmittingFeedback(true);
+    
+    // First mark as completed if not already
+    if (selectedBooking.status !== 'completed') {
+      await completeBooking(selectedBooking.id);
+    }
+
+    const { error } = await updateBookingNotes(selectedBooking.id, tutorNotes, perfRating);
+    
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Feedback Saved", description: "Your feedback has been saved for the student." });
+      setFeedbackDialogOpen(false);
+      setTutorNotes("");
+      setSelectedBooking(null);
+      
+      // Refresh bookings
+      const { data: bks } = await getMyBookings(user!.id);
+      const enrichedBookings = await Promise.all(
+        bks.map(async (b: any) => {
+          const { data: studentProf } = await getProfileByUserId(b.student_id);
+          return { ...b, studentName: studentProf?.full_name || "Student" };
+        })
+      );
+      setBookings(enrichedBookings);
+    }
+    setIsSubmittingFeedback(false);
+  };
+
+  const pastConfirmedBookings = bookings
+    .filter((b) => b.status === "confirmed" && new Date(b.booking_date) < new Date())
+    .sort((a, b) => new Date(b.booking_date).getTime() - new Date(a.booking_date).getTime());
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -248,6 +291,35 @@ const TutorDashboard = () => {
                     )}
                   </CardContent>
                 </Card>
+                
+                {/* Lessons Awaiting Feedback */}
+                {pastConfirmedBookings.length > 0 && (
+                  <Card className="border-amber-200 bg-amber-50/30 dark:bg-amber-900/10">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                        <MessageSquare className="h-5 w-5" /> Lessons Awaiting Feedback
+                      </CardTitle>
+                      <CardDescription>These lessons are in the past. Mark them as completed and add student feedback.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {pastConfirmedBookings.map((b) => (
+                          <div key={b.id} className="flex items-center justify-between rounded-xl bg-white dark:bg-card px-4 py-3 border border-amber-200/50 shadow-sm">
+                            <div>
+                              <p className="font-bold text-foreground">Lesson with {b.studentName}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(b.booking_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })} at {b.time_slot}
+                              </p>
+                            </div>
+                            <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white rounded-lg" onClick={() => { setSelectedBooking(b); setFeedbackDialogOpen(true); }}>
+                              Add Feedback
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Performance Analytics */}
                 <Card>
@@ -439,6 +511,51 @@ const TutorDashboard = () => {
             <Button variant="outline" onClick={() => setBoostDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleBoostPurchase}>
               <Zap className="mr-2 h-4 w-4" /> Purchase Boost
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Feedback Dialog */}
+      <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle>Session Feedback</DialogTitle>
+            <DialogDescription>
+              Add notes and a performance rating for {selectedBooking?.studentName}. This will be visible to their parent.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Performance Rating (1-10)</Label>
+              <div className="flex items-center gap-4">
+                <input 
+                  type="range" min="1" max="10" step="1" 
+                  className="flex-1 accent-primary" 
+                  value={perfRating} 
+                  onChange={(e) => setPerfRating(parseInt(e.target.value))} 
+                />
+                <span className="font-bold text-lg bg-primary/10 text-primary px-3 py-1 rounded-lg w-12 text-center">
+                  {perfRating}
+                </span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Session Notes & Progress</Label>
+              <Textarea 
+                placeholder="How was the session? What did you cover? What should the student practice?" 
+                className="min-h-[120px] rounded-xl"
+                value={tutorNotes}
+                onChange={(e) => setTutorNotes(e.target.value)}
+              />
+              <p className="text-[10px] text-muted-foreground">
+                Your notes are private between you and the parent/student.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setFeedbackDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleFeedbackSubmit} disabled={isSubmittingFeedback}>
+              {isSubmittingFeedback ? "Saving..." : "Save & Mark Completed"}
             </Button>
           </DialogFooter>
         </DialogContent>
