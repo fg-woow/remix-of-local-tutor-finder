@@ -410,9 +410,67 @@ const TutorProfile = () => {
                     </div>
                   )}
 
+                  {/* Lesson Packages / Bundle Deals */}
+                  <div className="border-t p-6 bg-primary/5">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        Bundle & Save
+                      </h2>
+                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">SPECIAL OFFERS</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-6">
+                      Purchase a lesson package to get a discount on the hourly rate. Credits never expire!
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {[
+                        { count: 5, discount: 5, name: "Starter" },
+                        { count: 10, discount: 10, name: "Popular" },
+                        { count: 20, discount: 20, name: "Elite" }
+                      ].map((pkg) => {
+                        const originalPrice = tutor.hourlyRate * pkg.count;
+                        const discountedPrice = originalPrice * (1 - pkg.discount / 100);
+                        return (
+                          <div key={pkg.count} className="relative rounded-2xl border bg-card p-5 shadow-sm hover:shadow-md transition-all border-primary/10 hover:border-primary/30 flex flex-col items-center text-center group">
+                            {pkg.count === 10 && (
+                              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                                BEST VALUE
+                              </div>
+                            )}
+                            <h3 className="font-bold text-lg mb-1">{pkg.count} Lessons</h3>
+                            <p className="text-xs text-muted-foreground mb-3">{pkg.name} Package</p>
+                            
+                            <div className="mb-4">
+                              <span className="text-2xl font-bold">${discountedPrice.toFixed(0)}</span>
+                              <div className="flex items-center justify-center gap-2 mt-1">
+                                <span className="text-xs text-muted-foreground line-through">${originalPrice.toFixed(0)}</span>
+                                <Badge className="h-4 px-1.5 text-[9px] bg-green-500">{pkg.discount}% OFF</Badge>
+                              </div>
+                            </div>
+                            
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="w-full rounded-xl group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                              onClick={() => {
+                                toast({
+                                  title: "Package Purchased!",
+                                  description: `You have successfully purchased the ${pkg.count} lesson package. Credits have been added to your account.`,
+                                });
+                              }}
+                            >
+                              Buy Package
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   {/* Appointment Booking */}
                   <div className="border-t p-6">
-                    <h2 className="mb-6 text-lg font-semibold text-foreground">Book a Lesson</h2>
+                    <h2 className="mb-6 text-lg font-semibold text-foreground">Book a Single Lesson</h2>
                     <BookingCalendar tutorId={tutor.id} hourlyRate={tutor.hourlyRate} />
                   </div>
                 </CardContent>

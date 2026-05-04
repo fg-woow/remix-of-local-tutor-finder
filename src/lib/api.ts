@@ -16,9 +16,18 @@ export type ProfileInsert = TablesInsert<"profiles">;
 export type ProfileUpdate = TablesUpdate<"profiles">;
 export type Review = Tables<"reviews">;
 export type ReviewInsert = TablesInsert<"reviews">;
-export type Booking = Tables<"bookings">;
-export type BookingInsert = TablesInsert<"bookings">;
-export type BookingUpdate = TablesUpdate<"bookings">;
+export type Booking = Tables<"bookings"> & {
+  is_recurring?: boolean;
+  recurring_series_id?: string;
+};
+export type BookingInsert = TablesInsert<"bookings"> & {
+  is_recurring?: boolean;
+  recurring_series_id?: string;
+};
+export type BookingUpdate = TablesUpdate<"bookings"> & {
+  is_recurring?: boolean;
+  recurring_series_id?: string;
+};
 export type UserRole = Tables<"user_roles">;
 
 // ==========================================
@@ -161,6 +170,15 @@ export async function getMyBookings(userId: string) {
     .or(`student_id.eq.${userId},tutor_id.eq.${userId}`)
     .order("booking_date", { ascending: true });
   return { data: data || [], error };
+}
+
+/** Create multiple recurring bookings */
+export async function createRecurringBookings(bookings: BookingInsert[]) {
+  const { data, error } = await supabase
+    .from("bookings")
+    .insert(bookings)
+    .select();
+  return { data, error };
 }
 
 /** Get bookings for a tutor on a specific date (to check availability) */

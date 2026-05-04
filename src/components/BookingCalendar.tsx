@@ -9,9 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
-import { createBooking, getTutorBookingsForDate, getParentChildren, getProfileByUserId } from "@/lib/api";
+import { createBooking, getTutorBookingsForDate, getParentChildren, getProfileByUserId, createRecurringBookings } from "@/lib/api";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 
 interface BookingCalendarProps {
     tutorId: string;
@@ -36,6 +37,8 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
     const [expiry, setExpiry] = useState("");
     const [cvc, setCvc] = useState("");
     const [duration, setDuration] = useState(1);
+    const [isRecurring, setIsRecurring] = useState(false);
+    const [recurrenceWeeks, setRecurrenceWeeks] = useState(4);
 
     // Group lesson
     const [isGroupLesson, setIsGroupLesson] = useState(false);
@@ -132,16 +135,30 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
             ? selectedChildren 
             : [user!.id];
 
-        const results = await Promise.all(targetStudentIds.map(async (studentId) => {
-            return await createBooking({
-                tutor_id: tutorId,
-                student_id: studentId,
-                booking_date: format(date as Date, "yyyy-MM-dd"),
-                time_slot: selectedSlot as string,
-                hourly_rate: isGroupLesson ? perStudentRate : hourlyRate,
-            });
-        }));
+        const seriesId = isRecurring ? crypto.randomUUID() : undefined;
+        const weeksToCreate = isRecurring ? recurrenceWeeks : 1;
+        
+        const bookingPromises: any[] = [];
 
+        for (let i = 0; i < weeksToCreate; i++) {
+            const currentBookingDate = new Date(date!);
+            currentBookingDate.setDate(currentBookingDate.getDate() + (i * 7));
+            const currentBookingDateStr = format(currentBookingDate, "yyyy-MM-dd");
+
+            targetStudentIds.forEach(studentId => {
+                bookingPromises.push(createBooking({
+                    tutor_id: tutorId,
+                    student_id: studentId,
+                    booking_date: currentBookingDateStr,
+                    time_slot: selectedSlot as string,
+                    hourly_rate: isGroupLesson ? perStudentRate : hourlyRate,
+                    is_recurring: isRecurring,
+                    recurring_series_id: seriesId
+                }));
+            });
+        }
+
+        const results = await Promise.all(bookingPromises);
         const error = results.find(r => r.error)?.error;
         
         setIsBooking(false);
@@ -152,16 +169,17 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
             toast.error("Failed to book lesson", { description: error.message });
             return;
         }
-        toast.success(isGroupLesson ? "Group booking confirmed!" : "Booking confirmed!", {
-            description: `Your ${isGroupLesson ? `group (${groupSize} students)` : ''} session is scheduled for ${format(date as Date, "MMMM do")} at ${selectedSlot}.`,
+        
+        toast.success(isRecurring ? `${weeksToCreate} weekly lessons booked successfully!` : (isGroupLesson ? "Group booking confirmed!" : "Booking confirmed!"), {
+            description: `Your session is scheduled starting ${format(date as Date, "MMMM do")} at ${selectedSlot}.`,
         });
 
         // Auto-add to Google Calendar
         try {
             const startDate = format(date as Date, "yyyyMMdd");
-            const title = encodeURIComponent(`Tutoring Session`);
+            const title = encodeURIComponent(`Tutoring Session${isRecurring ? ' (Recurring)' : ''}`);
             const details = encodeURIComponent(`Lesson at ${selectedSlot}. Rate: $${hourlyRate}/hr`);
-            const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDate}/${startDate}&details=${details}`;
+            const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDate}/${startDate}&details=${details}${isRecurring ? '&recur=RRULE:FREQ=WEEKLY;COUNT=' + weeksToCreate : ''}`;
             window.open(calUrl, '_blank');
         } catch {}
 
@@ -203,8 +221,17 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
 
     // Group lesson pricing: per-student rate decreases as group grows
     const perStudentRate = isGroupLesson ? hourlyRate * (1 - (groupSize - 1) * 0.1) : hourlyRate;
-    const basePrice = isGroupLesson ? perStudentRate * duration * groupSize : hourlyRate * duration;
-    const finalAmount = Math.max(0, basePrice - discount + tipAmount - (useBalance ? mockBalance : 0));
+    const basePricePerSession = isGroupLesson ? perStudentRate * duration * groupSize : hourlyRate * duration;
+    
+    const calculateTotal = () => {
+        let multiplier = 1;
+        if (isRecurring) {
+            multiplier = recurrenceWeeks * 0.9; // 10% discount for recurring
+        }
+        return (basePricePerSession * multiplier) - discount + tipAmount - (useBalance ? mockBalance : 0);
+    };
+
+    const finalAmount = Math.max(0, calculateTotal());
 
     return (
         <div className="grid gap-6 md:grid-cols-2">
@@ -448,6 +475,37 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
                                 </div>
                             ) : (
                                 <>
+                                    {/* Recurring Option */}
+                                    <div className="flex items-center justify-between gap-2 rounded-lg border p-4 bg-primary/5 border-primary/20">
+                                        <div className="space-y-0.5">
+                                            <div className="flex items-center gap-2">
+                                                <label htmlFor="isRecurring" className="text-sm font-bold text-primary">RECURRING WEEKLY</label>
+                                                <Badge variant="outline" className="border-primary/20 bg-primary/10 text-primary text-[10px]">SAVE 10%</Badge>
+                                            </div>
+                                            <p className="text-[10px] text-muted-foreground italic">Repeat this lesson every {format(date!, "EEEE")}</p>
+                                        </div>
+                                        <Switch id="isRecurring" checked={isRecurring} onCheckedChange={setIsRecurring} />
+                                    </div>
+
+                                    {isRecurring && (
+                                        <div className="p-3 rounded-xl space-y-3 border bg-muted/30 border-dashed animate-in fade-in zoom-in-95">
+                                            <Label className="text-xs font-bold text-muted-foreground uppercase">Number of Weeks</Label>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {[4, 8, 12].map((weeks) => (
+                                                    <Button
+                                                        key={weeks}
+                                                        type="button"
+                                                        variant={recurrenceWeeks === weeks ? "default" : "outline"}
+                                                        className="h-8 text-xs rounded-lg"
+                                                        onClick={() => setRecurrenceWeeks(weeks)}
+                                                    >
+                                                        {weeks} Weeks
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {/* Gift Option */}
                                     <div className="flex items-center gap-2 rounded-lg border p-3 bg-muted/20">
                                         <input type="checkbox" id="isGift" checked={isGift} onChange={(e) => setIsGift(e.target.checked)} className="rounded border-gray-300" />
@@ -492,8 +550,14 @@ const BookingCalendar = ({ tutorId, hourlyRate }: BookingCalendarProps) => {
                                     <div className="bg-muted p-3 rounded-lg space-y-1 text-sm">
                                         <div className="flex justify-between">
                                             <span>Base Rate ({duration} hrs{isGroupLesson ? ` × ${groupSize} students` : ''})</span>
-                                            <span>${basePrice.toFixed(2)}</span>
+                                            <span>${basePricePerSession.toFixed(2)}</span>
                                         </div>
+                                        {isRecurring && (
+                                            <div className="flex justify-between text-primary font-medium">
+                                                <span>Recurrence ({recurrenceWeeks} weeks × 10% off)</span>
+                                                <span>× {recurrenceWeeks} sessions</span>
+                                            </div>
+                                        )}
                                         {isGroupLesson && (
                                             <div className="flex justify-between text-purple-600">
                                                 <span>Group Discount</span>
