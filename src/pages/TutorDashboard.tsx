@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "react-i18next";
+import { Countdown } from "@/components/Countdown";
 
 interface BookingInfo {
   id: string;
@@ -277,6 +278,9 @@ const TutorDashboard = () => {
                                 <p className="text-xs text-muted-foreground">
                                   {new Date(b.booking_date).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })} at {b.time_slot}
                                 </p>
+                                <div className="mt-1">
+                                  <Countdown dateStr={b.booking_date} timeStr={b.time_slot} />
+                                </div>
                               </div>
                             </div>
                             <div className="text-right">

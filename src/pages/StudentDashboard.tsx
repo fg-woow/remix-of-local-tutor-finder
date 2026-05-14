@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { getMyBookings, getProfileByUserId, getFavoriteTutorProfiles } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { Countdown } from "@/components/Countdown";
 
 interface BookingInfo {
   id: string;
@@ -250,6 +251,9 @@ const StudentDashboard = () => {
                                 <p className="text-xs text-muted-foreground">
                                   {new Date(b.booking_date).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })} at {b.time_slot}
                                 </p>
+                                <div className="mt-1">
+                                  <Countdown dateStr={b.booking_date} timeStr={b.time_slot} />
+                                </div>
                               </div>
                             </div>
                             <div className="flex gap-2">

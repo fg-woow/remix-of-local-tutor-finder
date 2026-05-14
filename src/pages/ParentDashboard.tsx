@@ -51,6 +51,7 @@ import {
   getProfileByUserId,
 } from "@/lib/api";
 import { useTranslation } from "react-i18next";
+import { Countdown } from "@/components/Countdown";
 
 interface ChildInfo {
   linkId: string;
@@ -537,7 +538,10 @@ const ParentDashboard = () => {
                                 <h4 className="font-bold text-foreground text-sm">{b.childName}</h4>
                                 <p className="text-xs text-muted-foreground">with {b.tutorName}</p>
                               </div>
-                              <Badge variant="outline" className="text-[10px] text-green-600 bg-green-50 border-green-200">Online</Badge>
+                              <div className="flex flex-col items-end gap-1">
+                                <Badge variant="outline" className="text-[10px] text-green-600 bg-green-50 border-green-200">Online</Badge>
+                                <Countdown dateStr={b.booking_date} timeStr={b.time_slot} />
+                              </div>
                             </div>
                           </div>
                         ))
