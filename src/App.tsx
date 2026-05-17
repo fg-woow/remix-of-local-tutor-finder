@@ -21,6 +21,7 @@ import MapView from "./pages/MapView";
 import Bookings from "./pages/Bookings";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./components/ThemeProvider";
+import { GlobalLessonTimer } from "./components/GlobalLessonTimer";
 import i18n from "./i18n";
 
 const queryClient = new QueryClient();
@@ -52,6 +53,7 @@ const App = () => {
           <AuthProvider>
             <Toaster />
             <Sonner />
+            <GlobalLessonTimer />
             <BrowserRouter basename={`/${urlLang}`}>
               <Routes>
                 <Route path="/" element={<Index />} />
